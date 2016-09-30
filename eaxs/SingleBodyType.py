@@ -1,0 +1,115 @@
+#############################################################
+# 2016-09-26: SingleBodyType.py 
+# Author: Jeremy M. Gibson (State Archives of North Carolina)
+# 
+# Description: 
+##############################################################
+
+from eaxs.HeaderType import Header
+from eaxs.ChildMessageType import ChildMessage
+from eaxs.ParameterType import Parameter
+from eaxs.IntBodyContentType import IntBodyContent
+from eaxs.ExtBodyContentType import ExtBodyContent
+from email.message import Message
+from xml_help.CommonMethods import CommonMethods
+from collections import OrderedDict
+from urllib.parse import unquote
+import logging
+
+
+class SingleBody:
+    """"""
+    
+    def __init__(self, payload):
+        """Constructor for SingleBody
+        :type payload : Message
+        """
+        self.payload = payload
+        self.content_type = None  # type: str
+        self.charset = None  # type: str
+        self.content_name = None  # type: str
+        self.content_type_comments = None  # type: str
+        self.content_type_param = None  # type: list[Parameter]
+        self.transfer_encoding = None  # type: str
+        self.transfer_encoding_comments = None  # type: str
+        self.content_id = None  # type: str
+        self.content_id_comments = None  # type: str
+        self.description = None  # type: str
+        self.description_comments = None  # type: str
+        self.disposition = None  # type: str
+        self.disposition_file_name = None  # type: str
+        self.disposition_comments = None  # type: str
+        self.disposition_params = None  # type: list[Parameter]
+        self.other_mime_header = None  # type: list[Header]
+        self.body_content = None  # type: IntBodyContent
+        self.ext_body_content = []  # type: list[ExtBodyContent]
+        self.child_message = None  # type: ChildMessage
+        self.phantom_body = None  # type: str
+
+        self.append_body = True
+        self.logger = logging.getLogger()
+
+    def process_headers(self):
+        for header, value in self.payload.items():
+
+            if header == "Content-Type":
+                expression = CommonMethods.get_content_type(value)
+                if len(expression) > 1:
+                    self.content_type = expression[0]
+                    self.charset = expression[2]
+                    # self.logger.info('Captured {} : {}'.format(header, value))
+                    continue
+                else:
+                    self.content_type = expression[0]
+                    continue
+            if header == "Content-Transfer-Encoding":
+                self.transfer_encoding = value
+                continue
+            if header == "Content-Disposition":
+                try:
+                    self.disposition = value.split(";")[0]
+                    fn = value.split(";")[1].split("=")[1]
+                    if len(fn.split("''")) > 1:
+                        self.disposition_file_name = unquote(fn.split("''")[1])
+                    else:
+                        self.disposition_file_name = unquote(fn)
+                    continue
+                except IndexError as e:
+                    print(e)
+            self.logger.info('Not Captured {} : {}'.format(header, value))
+
+    def process_body(self):
+        if self.content_type.__contains__("application"):
+            if self._store_body():
+                extbody = ExtBodyContent()
+                extbody.char_set = self.charset
+                extbody.local_id = CommonMethods.increment_local_id()
+                extbody.transfer_encoding = self.transfer_encoding
+                extbody.eol = CommonMethods.get_eol(self.payload.get_payload())
+                extbody.hash = CommonMethods.get_hash(self.payload.as_bytes())
+                extbody.body_content = self.payload.get_payload()
+                children = OrderedDict({"ContentType": self.content_type,
+                            "Disposition": self.disposition,
+                            "DispositionFileName": self.disposition_file_name,
+                            "ContentTransferEncoding": self.transfer_encoding})
+                extbody.build_xml_file(children)
+                self.ext_body_content.append(extbody)
+                self.payload = None
+                #self.get_attributes()
+        else:
+            self.body_content = CommonMethods.cdata_wrap(self.payload.get_payload())
+            self.payload = None
+
+    def _store_body(self):
+        if self.disposition_file_name != "rtf-body.rtf":
+            return True
+        elif not CommonMethods.store_rtf_body():
+            return False
+        return True
+
+    def get_attributes(self):
+       for item in [a for a in dir(self)
+                    if not a.startswith('__')
+                    and not callable(getattr(self, a))
+                    and self.__getattribute__(a) is not None]:
+               print('{} :: {}'.format(item, self.__getattribute__(item)))
