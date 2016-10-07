@@ -16,6 +16,10 @@ from eaxs.SingleBodyType import SingleBody
 from xml_help.CommonMethods import CommonMethods
 from eaxs.eaxs_helpers import MessageProcessor
 
+from lxml.ElementInclude import etree
+
+from collections import OrderedDict
+
 
 class DmMessage:
     """"""
@@ -24,7 +28,7 @@ class DmMessage:
         """Constructor for Message"""
         self.message = message  # type: Message
         self.relative_path = rel_path  # type: str
-        self.local_id = local_id  # type: int
+        self.local_id = local_id
         self.message_id = CommonMethods.cdata_wrap(self.message.get("Message-ID"))  # type: str
         self.mime_version = self.message.get("MIME-Version")  # type: str
         self.m_from = CommonMethods.cdata_wrap(self.message.get("From"))  # type: str
@@ -42,6 +46,18 @@ class DmMessage:
             self.eol = restrict.LF
         self.hash = CommonMethods.get_hash(self.message.as_bytes())  # type: Hash
 
+        self.mes_map = OrderedDict([
+            ("relative_path", "RelPath"),
+            ("local_id", "LocalId"),
+            ("message_id", "MessageId"),
+            ("mime_version", "MimeVersion"),
+            ("headers", "Header"),
+            ("status_flag", "StatusFlag"),
+            ("single_body", "SingleBody"),
+            ("multiple_body", "MultiBody"),
+            ("incomplete", "Incomplete"),
+            ("hash", "Hash")])
+
         self._process_headers()
         self._process_payload()
 
@@ -53,3 +69,33 @@ class DmMessage:
     def _process_payload(self):
         message_processor = MessageProcessor.MessageProcessor(self.message, self.relative_path)
         self.multiple_body = message_processor.process_payloads()
+
+    def render(self, parent=None):
+        """
+        :type parent: Element
+
+        :param parent:
+        :return:
+        """
+        if parent is not None:
+            self.local_id = str(self.local_id)
+            message = etree.SubElement(parent, "Message")
+            for key, value in self.mes_map.items():
+                if self.__getattribute__(key) is not None:
+                    if isinstance(self.__getattribute__(key), list):
+                        # TODO: Handle this
+                        for item in self.__getattribute__(key):
+                            if isinstance(item, Header):
+                                item.render(message)
+                            if isinstance(item, MultiBody):
+                                item.render(message)
+                        continue
+                    if isinstance(self.__getattribute__(key), Hash):
+                        self.__getattribute__(key).render(message)
+                        continue
+                    if isinstance(self.__getattribute__(key), MultiBody):
+                        self.__getattribute__(key).render(message)
+                        continue
+                child = etree.SubElement(message, value)
+                child.text = self.__getattribute__(key)
+                pass

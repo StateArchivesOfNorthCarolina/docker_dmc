@@ -4,7 +4,7 @@
 #
 # Description: Implementation of the HashType
 ##############################################################
-
+from lxml.ElementInclude import etree
 
 class Hash:
     """"""
@@ -13,3 +13,15 @@ class Hash:
         """Constructor for Hash"""
         self.value = value  # type: str
         self.function = function  # type: str
+
+    def render(self, parent):
+        """
+        :type parent: xml.etree.ElementTree.Element
+        :param parent:
+        :return:
+        """
+        child = etree.SubElement(parent, "Hash")
+        child1 = etree.SubElement(child, "Value")
+        child1.text = self.value
+        child2 = etree.SubElement(child, "Function")
+        child2.text = self.function

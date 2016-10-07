@@ -12,6 +12,8 @@ import os
 from eaxs.eaxs_helpers.Render import Render
 from collections import OrderedDict
 import codecs
+from lxml.ElementInclude import etree
+
 
 class ExtBodyContent:
     """"""
@@ -37,6 +39,7 @@ class ExtBodyContent:
         if self.xml_wrapped:
             try:
                 fn = '{}{}'.format(self.gid, '.xml')
+                self.rel_path = ".\{}\{}".format(CommonMethods.get_attachment_directory(), fn)
                 fh = codecs.open(os.path.join(self.attachment_directory, fn), "w", "utf-8")
                 fh.write(xml)
                 fh.close()
@@ -59,6 +62,29 @@ class ExtBodyContent:
         rend = Render("ExternalBodyPart", chillen)
         self.write_ext_body(rend.render())
         self.body_content = None
+
+    def render(self, parent):
+        """
+        :type parent: xml.etree.ElementTree.Element
+        :param parent:
+        :return:
+        """
+        self.local_id = str(self.local_id)
+        self.xml_wrapped = str(self.xml_wrapped)
+        ext_bdy_head = etree.SubElement(parent, "ExtBodyContent")
+        child1 = etree.SubElement(ext_bdy_head, "RelPath")
+        child1.text = self.rel_path
+        child2 = etree.SubElement(ext_bdy_head, "CharSet")
+        child2.text = self.char_set
+        child3 = etree.SubElement(ext_bdy_head, "TransferEncoding")
+        child3.text = self.transfer_encoding
+        child4 = etree.SubElement(ext_bdy_head, "LocalId")
+        child4.text = self.local_id
+        child5 = etree.SubElement(ext_bdy_head, "XMLWrapped")
+        child5.text = self.xml_wrapped
+        child6 = etree.SubElement(ext_bdy_head, "Eol")
+        child6.text = self.eol
+        self.hash.render(ext_bdy_head)
 
 
 

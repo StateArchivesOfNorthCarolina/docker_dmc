@@ -5,9 +5,8 @@
 # Description: Implementation of EAXS header-type
 ##############################################################
 import re
-
-import xml_help.CDataWrap as CD
-from eaxs.eaxs_helpers.Render import Render
+from lxml.ElementInclude import etree
+from xml_help.CommonMethods import CommonMethods
 
 
 class Header:
@@ -15,15 +14,19 @@ class Header:
 
     def __init__(self, name, value, cdata=False):
         """Constructor for Header"""
-        self.name = name  # type: str
-        self.value = value  # type: str
         self.cdata = cdata
-        if re.search("[<>\'\"]", value) is not None:
-            self.cdata = True
+        self.name = name  # type: str
+        self.value = CommonMethods.cdata_wrap(value)  # type: str
 
-    def render(self):
-        if not self.cdata:
-            r = Render('Header', {self.name: self.value})
-        else:
-            r = Render('Header', {self.name: CD.cdata_wrap(self.value)})
-        return r.render()
+    def render(self, parent):
+        """
+         :type parent: xml.etree.ElementTree.Element
+         :param parent:
+         :return:
+         """
+        child = etree.SubElement(parent, "Header")
+        child1 = etree.SubElement(child, "Name")
+        child1.text = self.name
+        child2 = etree.SubElement(child, "Value")
+        child2.text = self.value
+

@@ -10,8 +10,8 @@ from eaxs.HeaderType import Header
 from eaxs.ParameterType import Parameter
 from email.message import Message
 from xml_help.CommonMethods import CommonMethods
-from xml_help.ContentTypeHandler import ContentTypeHandler
-
+from lxml.ElementInclude import etree
+from collections import OrderedDict
 
 class MultiBody:
     """"""
@@ -43,9 +43,54 @@ class MultiBody:
         self.multi_bodies = []  # type: list[MultiBody]
         self.epilogue = None  # type: str
 
+        self.multi_map = OrderedDict([
+            ("content_type", "ContentType"),
+            ("charset", "Charset"),
+            ("content_name", "ContentName"),
+            ("boundary_string", "BoundaryString"),
+            ("content_type_comments", "ContentTypeComments"),
+            ("content_type_param", "ContentTypeParam"),
+            ("transfer_encoding", "TransferEncoding"),
+            ("transfer_encoding_comments", "TransferEncodingComments"),
+            ("content_id", "ContentId"),
+            ("content_id_comments", "ContentIdComments"),
+            ("description", "Description"),
+            ("description_comments", "DescriptionComments"),
+            ("disposition", "Disposition"),
+            ("disposition_file_name", "DispositionFileName"),
+            ("disposition_comments", "DispositionComments"),
+            ("disposition_params", "DispositionParam"),
+            ("other_mime_header", "OtherMimeHeader"),
+            ("preamble", "Preamble"),
+            ("single_bodies", "SingleBody"),
+            ("multi_bodies", "MultiBody"),
+            ("epilogue", "Epilogue"),
+        ])
+
     def process_headers(self):
         for header, value in self.payload.items():
             if header == "Content-Type":
                 expression = CommonMethods.get_content_type(value)
                 self.content_type = expression[0]
                 self.boundary_string = expression[2]
+
+    def render(self, parent):
+        """
+        :type parent: xml.etree.ElementTree.Element
+        :param parent:
+        :return:
+        """
+        multi_child_head = etree.SubElement(parent, "MultiBody")
+        for key, value in self.multi_map.items():
+            if self.__getattribute__(key) is not None:
+                if isinstance(self.__getattribute__(key), list):
+                    # TODO: Handle this
+                    for item in self.__getattribute__(key):
+                        if isinstance(item, SingleBody):
+                            item.render(multi_child_head)
+                        if isinstance(item, MultiBody):
+                            item.render(multi_child_head)
+                        continue
+                    continue
+                child = etree.SubElement(multi_child_head, value)
+                child.text = self.__getattribute__(key)

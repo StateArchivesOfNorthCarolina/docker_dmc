@@ -16,7 +16,6 @@ import logging.config
 import yaml
 from dir_walker import Walker
 from xml_help.CommonMethods import CommonMethods
-from eaxs.Account import Account
 
 
 class DarcMailCLI(object):
@@ -40,6 +39,7 @@ class DarcMailCLI(object):
         self.xml_wrap = self.XML_WRAP
         self.log_name = self.LOG_NAME
         self.data_dir = None
+        self.xml_dir = None
         self.mbox_structure = None
         #  max_internal      = dmc.ALLOCATE_BY_DISPOSITION
         self._load_logger()
@@ -91,13 +91,19 @@ class DarcMailCLI(object):
             base_path = os.path.abspath(os.path.join(self.account_directory, os.pardir))
             CommonMethods.set_base_path(base_path)
             self.data_dir = os.path.abspath(os.path.join(base_path, argdict['data_dir']))
+            self.xml_dir = os.path.abspath(os.path.join(base_path, "eaxs_xml"))
             if not os.path.exists(self.data_dir):
                 os.mkdir(self.data_dir)
+
+            if not os.path.exists(self.xml_dir):
+                os.mkdir(self.xml_dir)
             CommonMethods.set_attachment_dir(self.data_dir)
+            CommonMethods.set_xml_dir(self.xml_dir)
         else:
             base_path = os.path.abspath(os.path.join(self.account_directory, os.pardir))
             self.data_dir = os.path.join(base_path, "data")
             CommonMethods.set_attachment_dir(self.data_dir)
+            CommonMethods.set_xml_dir(self.xml_dir)
 
         if argdict['folder_name']:
             self.folder_name = argdict['folder_name'].strip()
@@ -116,9 +122,7 @@ class DarcMailCLI(object):
         Runs the whole #!
         :return:
         '''
-        wlk = Walker.DirectoryWalker(self.account_directory)
-        account = Account(self.account_name)
-        account.build_account_element()
+        wlk = Walker.DirectoryWalker(self.account_directory, self.xml_dir, self.account_name)
         wlk.do_walk()
 
 

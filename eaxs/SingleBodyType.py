@@ -12,9 +12,10 @@ from eaxs.IntBodyContentType import IntBodyContent
 from eaxs.ExtBodyContentType import ExtBodyContent
 from email.message import Message
 from xml_help.CommonMethods import CommonMethods
-from collections import OrderedDict
 from urllib.parse import unquote
 import logging
+from lxml.ElementInclude import etree
+from collections import OrderedDict
 
 
 class SingleBody:
@@ -48,6 +49,28 @@ class SingleBody:
 
         self.append_body = True
         self.logger = logging.getLogger()
+        self.sb_map = OrderedDict([
+            ("content_type", "ContentType"),
+            ("charset", "Charset"),
+            ("content_name", "ContentName"),
+            ("content_type_comments", "ContentTypeComments"),
+            ("content_type_param", "ContentTypeParam"),
+            ("transfer_encoding", "TransferEncoding"),
+            ("transfer_encoding_comments", "TransferEncodingComments"),
+            ("content_id", "ContentId"),
+            ("content_id_comments", "ContentIdComments"),
+            ("description", "Description"),
+            ("description_comments", "DescriptionComments"),
+            ("disposition", "Disposition"),
+            ("disposition_file_name", "DispositionFileName"),
+            ("disposition_comments", "DispositionComments"),
+            ("disposition_params", "DispositionParams"),
+            ("other_mime_header", "OtherMimeHeader"),
+            ("body_content", "BodyContent"),
+            ("ext_body_content", "ExtBodyContent"),
+            ("child_message", "ChildMessage"),
+            ("phantom_body", "Phantom_Body")
+        ])
 
     def process_headers(self):
         for header, value in self.payload.items():
@@ -75,11 +98,11 @@ class SingleBody:
                         self.disposition_file_name = unquote(fn)
                     continue
                 except IndexError as e:
-                    print(e)
+                    self.logger.error("{}: {}".format(e, value))
             self.logger.info('Not Captured {} : {}'.format(header, value))
 
     def process_body(self):
-        if self.content_type.__contains__("application"):
+        if not self.content_type.__contains__("plain"):
             if self._store_body():
                 extbody = ExtBodyContent()
                 extbody.char_set = self.charset
@@ -95,7 +118,6 @@ class SingleBody:
                 extbody.build_xml_file(children)
                 self.ext_body_content.append(extbody)
                 self.payload = None
-                #self.get_attributes()
         else:
             self.body_content = CommonMethods.cdata_wrap(self.payload.get_payload())
             self.payload = None
@@ -104,12 +126,30 @@ class SingleBody:
         if self.disposition_file_name != "rtf-body.rtf":
             return True
         elif not CommonMethods.store_rtf_body():
+            self.disposition_comments = "Attachment is duplicate of BodyContent: Not saved"
             return False
         return True
 
     def get_attributes(self):
-       for item in [a for a in dir(self)
-                    if not a.startswith('__')
-                    and not callable(getattr(self, a))
-                    and self.__getattribute__(a) is not None]:
-               print('{} :: {}'.format(item, self.__getattribute__(item)))
+       pass
+
+    def render(self, parent):
+        """
+        :type parent: xml.etree.ElementTree.Element
+        :param parent:
+        :return:
+        """
+        single_child_head = etree.SubElement(parent, "SingleBody")
+        for key, value in self.sb_map.items():
+            if self.__getattribute__(key) is not None:
+                if isinstance(self.__getattribute__(key), list):
+                    if len(self.__getattribute__(key)) == 0:
+                        continue
+                    if isinstance(self.__getattribute__(key)[0], ExtBodyContent):
+                        for ebc in self.ext_body_content:
+                            ebc.render(single_child_head)
+                        continue
+                    continue
+
+                child = etree.SubElement(single_child_head, value)
+                child.text = self.__getattribute__(key)

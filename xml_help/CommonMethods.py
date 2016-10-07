@@ -1,9 +1,8 @@
 import re
-from xml_help.CDataWrap import cdata_wrap as cdw
 import eaxs.eaxs_helpers.Restrictors as restrict
-from email.message import Message
 import hashlib
 from eaxs.HashType import Hash
+from lxml.ElementInclude import etree
 
 global __LOCALID__
 global __ROOTPATH__
@@ -18,11 +17,16 @@ class CommonMethods:
     def cdata_wrap(text):
         try:
             if re.search("[<>\'\"]", text) is not None:
-                return cdw(text)
+                return etree.CDATA(text)
+                pass
             return text
-        except TypeError as e:
+        except (ValueError, TypeError) as e:
             if text is None:
                 return "Error: No Recipient Found"
+            else:
+                t = re.sub("\[\[", "\\[\\[", text)
+                t = re.sub("]]", "\]\]", t)
+                CommonMethods.cdata_wrap(t)
 
     @staticmethod
     def get_content_type(content_type):
@@ -36,7 +40,7 @@ class CommonMethods:
             # has a secondary component
             mime = content_type.split(";")[0]
             key, value = content_type.split(";")[1].split("=")
-            return [mime, key.strip(), value]
+            return [mime, key.strip(), value.strip("\"")]
         else:
             # is only a mime type
             return [content_type]
@@ -44,6 +48,10 @@ class CommonMethods:
     @staticmethod
     def increment_local_id():
         globals()["__LOCALID__"] += 1
+        return globals()["__LOCALID__"]
+
+    @staticmethod
+    def get_current_local_id():
         return globals()["__LOCALID__"]
 
     @staticmethod
@@ -87,11 +95,36 @@ class CommonMethods:
         return globals()["__ATTACHMENTS__"]
 
     @staticmethod
+    def set_xml_dir(folder='eaxs_xml'):
+        globals()["__EAXS_XML__"] = folder
+
+    @staticmethod
+    def get_xml_directory():
+        return globals()["__EAXS_XML__"]
+
+    @staticmethod
     def set_store_rtf_body(val=False):
         globals()["__STORE_RTF_BODY__"] = val
 
     @staticmethod
     def store_rtf_body():
         return globals()["__STORE_RTF_BODY__"]
+
+    @staticmethod
+    def replace_escapes(text):
+        for c in text:
+           print(c)
+        item = re.sub("&lt;", "<", text)
+        item = re.sub("&gt;", ">", item)
+        item = re.sub("&quot;", "\"", item)
+        return item
+
+    @staticmethod
+    def set_eaxs_file(file_name):
+        globals()["__EAXS_FILE__"] = file_name
+
+    @staticmethod
+    def get_eaxs_filename():
+        return globals()["__EAXS_FILE__"]
 
 

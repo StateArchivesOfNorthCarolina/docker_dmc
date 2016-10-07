@@ -8,19 +8,24 @@ import os
 from eaxs.MessageType import DmMessage
 from xml_help.CommonMethods import CommonMethods
 import mailbox
+from eaxs.Account import Account
+from eaxs.FolderType import Folder
 
 
 class DirectoryWalker:
     """"""
 
-    def __init__(self, root_level):
+    def __init__(self, root_level, xml_dir, account_name):
         """Constructor for DirectoryWalker"""
 
         self.root = root_level
         self.folders = {}
         self.messages = []
         self.current_relpath = None  # type: str
-
+        self.xml_dir = xml_dir
+        self.account = Account(account_name, xml_dir)
+        self.account.start_account()
+        self.account.write_global_id()
 
     def do_walk(self):
         for root, dirs, files in os.walk(self.root, topdown=False):
@@ -33,8 +38,10 @@ class DirectoryWalker:
             else:
                 self.current_relpath = self.get_rel_path(mbx_path)
                 self.process_mbox(mbx_path)
-                self.folders = {mbx_path: self.messages}
-                print()
+                fldr = Folder(self.current_relpath, mbx_path)
+                fldr.messages = self.messages
+                fldr.render()
+        self.account.close_account()
 
     def process_mbox(self, path):
         mbox = mailbox.mbox(path)
