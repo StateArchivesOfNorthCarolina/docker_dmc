@@ -47,10 +47,13 @@ class DirectoryWalker:
         mbox = mailbox.mbox(path)
         self.messages = []
         print('Processing mbox found at: {}\n'.format(path))
-        for message in mbox:
-            e_msg = DmMessage(self.get_rel_path(path), CommonMethods.increment_local_id(), message)
-            e_msg.message = None
-            self.messages.append(e_msg)
+        try:
+            for message in mbox:
+                e_msg = DmMessage(self.get_rel_path(path), CommonMethods.increment_local_id(), message)
+                e_msg.message = None
+                self.messages.append(e_msg)
+        except MemoryError as e:
+            print("TODO: Add Logger, handle Memory Error")
         print('Processed mbox found at: {}\n'.format(path))
 
     def get_rel_path(self, path):
