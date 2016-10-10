@@ -41,3 +41,4 @@ class Folder:
                 mes.render(folder)
         outfile = open(CommonMethods.get_eaxs_filename(), "ab")
         etree.ElementTree(folder).write(outfile, encoding="utf-8", pretty_print=True)
+        folder = None

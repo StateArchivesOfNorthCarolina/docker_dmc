@@ -42,7 +42,7 @@ class MessageProcessor:
                     single_body.payload = None
                     self.single_bodies.append(single_body)
             except AttributeError as e:
-                self.logger.error("{}: {}".format(e, payload.as_string()))
+                self.logger.error("{}".format(e))
         multi_body.single_bodies = self.single_bodies
         multi_body.payload = None
         return multi_body
