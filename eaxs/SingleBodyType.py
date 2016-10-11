@@ -46,31 +46,8 @@ class SingleBody:
         self.ext_body_content = []  # type: list[ExtBodyContent]
         self.child_message = None  # type: ChildMessage
         self.phantom_body = None  # type: str
-
         self.append_body = True
         self.logger = logging.getLogger()
-        self.sb_map = OrderedDict([
-            ("content_type", "ContentType"),
-            ("charset", "Charset"),
-            ("content_name", "ContentName"),
-            ("content_type_comments", "ContentTypeComments"),
-            ("content_type_param", "ContentTypeParam"),
-            ("transfer_encoding", "TransferEncoding"),
-            ("transfer_encoding_comments", "TransferEncodingComments"),
-            ("content_id", "ContentId"),
-            ("content_id_comments", "ContentIdComments"),
-            ("description", "Description"),
-            ("description_comments", "DescriptionComments"),
-            ("disposition", "Disposition"),
-            ("disposition_file_name", "DispositionFileName"),
-            ("disposition_comments", "DispositionComments"),
-            ("disposition_params", "DispositionParams"),
-            ("other_mime_header", "OtherMimeHeader"),
-            ("body_content", "BodyContent"),
-            ("ext_body_content", "ExtBodyContent"),
-            ("child_message", "ChildMessage"),
-            ("phantom_body", "Phantom_Body")
-        ])
 
     def process_headers(self):
         for header, value in self.payload.items():
@@ -140,7 +117,7 @@ class SingleBody:
         :return:
         """
         single_child_head = etree.SubElement(parent, "SingleBody")
-        for key, value in self.sb_map.items():
+        for key, value in CommonMethods.get_singlebody_map().items():
             if self.__getattribute__(key) is not None:
                 if isinstance(self.__getattribute__(key), list):
                     if len(self.__getattribute__(key)) == 0:

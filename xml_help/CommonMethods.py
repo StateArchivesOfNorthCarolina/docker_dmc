@@ -3,6 +3,7 @@ import eaxs.eaxs_helpers.Restrictors as restrict
 import hashlib
 from eaxs.HashType import Hash
 from lxml.ElementInclude import etree
+from collections import OrderedDict
 
 global __LOCALID__
 global __ROOTPATH__
@@ -12,6 +13,71 @@ __LOCALID__= 0  # type: int
 
 
 class CommonMethods:
+
+    @staticmethod
+    def get_messagetype_map():
+        return OrderedDict([
+            ("relative_path", "RelPath"),
+            ("local_id", "LocalId"),
+            ("message_id", "MessageId"),
+            ("mime_version", "MimeVersion"),
+            ("headers", "Header"),
+            ("status_flag", "StatusFlag"),
+            ("single_body", "SingleBody"),
+            ("multiple_body", "MultiBody"),
+            ("incomplete", "Incomplete"),
+            ("hash", "Hash")])
+
+    @staticmethod
+    def get_singlebody_map():
+        return OrderedDict([
+            ("content_type", "ContentType"),
+            ("charset", "Charset"),
+            ("content_name", "ContentName"),
+            ("content_type_comments", "ContentTypeComments"),
+            ("content_type_param", "ContentTypeParam"),
+            ("transfer_encoding", "TransferEncoding"),
+            ("transfer_encoding_comments", "TransferEncodingComments"),
+            ("content_id", "ContentId"),
+            ("content_id_comments", "ContentIdComments"),
+            ("description", "Description"),
+            ("description_comments", "DescriptionComments"),
+            ("disposition", "Disposition"),
+            ("disposition_file_name", "DispositionFileName"),
+            ("disposition_comments", "DispositionComments"),
+            ("disposition_params", "DispositionParams"),
+            ("other_mime_header", "OtherMimeHeader"),
+            ("body_content", "BodyContent"),
+            ("ext_body_content", "ExtBodyContent"),
+            ("child_message", "ChildMessage"),
+            ("phantom_body", "Phantom_Body")
+        ])
+
+    @staticmethod
+    def get_multibody_map():
+        return OrderedDict([
+            ("content_type", "ContentType"),
+            ("charset", "Charset"),
+            ("content_name", "ContentName"),
+            ("boundary_string", "BoundaryString"),
+            ("content_type_comments", "ContentTypeComments"),
+            ("content_type_param", "ContentTypeParam"),
+            ("transfer_encoding", "TransferEncoding"),
+            ("transfer_encoding_comments", "TransferEncodingComments"),
+            ("content_id", "ContentId"),
+            ("content_id_comments", "ContentIdComments"),
+            ("description", "Description"),
+            ("description_comments", "DescriptionComments"),
+            ("disposition", "Disposition"),
+            ("disposition_file_name", "DispositionFileName"),
+            ("disposition_comments", "DispositionComments"),
+            ("disposition_params", "DispositionParam"),
+            ("other_mime_header", "OtherMimeHeader"),
+            ("preamble", "Preamble"),
+            ("single_bodies", "SingleBody"),
+            ("multi_bodies", "MultiBody"),
+            ("epilogue", "Epilogue"),
+        ])
 
     @staticmethod
     def cdata_wrap(text):

@@ -43,30 +43,6 @@ class MultiBody:
         self.multi_bodies = []  # type: list[MultiBody]
         self.epilogue = None  # type: str
 
-        self.multi_map = OrderedDict([
-            ("content_type", "ContentType"),
-            ("charset", "Charset"),
-            ("content_name", "ContentName"),
-            ("boundary_string", "BoundaryString"),
-            ("content_type_comments", "ContentTypeComments"),
-            ("content_type_param", "ContentTypeParam"),
-            ("transfer_encoding", "TransferEncoding"),
-            ("transfer_encoding_comments", "TransferEncodingComments"),
-            ("content_id", "ContentId"),
-            ("content_id_comments", "ContentIdComments"),
-            ("description", "Description"),
-            ("description_comments", "DescriptionComments"),
-            ("disposition", "Disposition"),
-            ("disposition_file_name", "DispositionFileName"),
-            ("disposition_comments", "DispositionComments"),
-            ("disposition_params", "DispositionParam"),
-            ("other_mime_header", "OtherMimeHeader"),
-            ("preamble", "Preamble"),
-            ("single_bodies", "SingleBody"),
-            ("multi_bodies", "MultiBody"),
-            ("epilogue", "Epilogue"),
-        ])
-
     def process_headers(self):
         for header, value in self.payload.items():
             if header == "Content-Type":
@@ -81,7 +57,7 @@ class MultiBody:
         :return:
         """
         multi_child_head = etree.SubElement(parent, "MultiBody")
-        for key, value in self.multi_map.items():
+        for key, value in CommonMethods.get_multibody_map().items():
             if self.__getattribute__(key) is not None:
                 if isinstance(self.__getattribute__(key), list):
                     # TODO: Handle this

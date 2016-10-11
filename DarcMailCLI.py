@@ -42,15 +42,38 @@ class DarcMailCLI(object):
         self.xml_dir = None
         self.mbox_structure = None
         #  max_internal      = dmc.ALLOCATE_BY_DISPOSITION
+
+        self._arg_parse()
         self._load_logger()
         self.logger = logging.getLogger()
-        self._arg_parse()
 
-    @staticmethod
-    def _load_logger():
-        f = open('basic_logger.yml', 'rt')
+    def _load_logger(self):
+        if not os.path.exists('basic_logger.yml'):
+            self._build_basic_logger()
+
+        f = open('basic_logger.yml', 'r')
         config = yaml.safe_load(f.read())
         logging.config.dictConfig(config)
+
+    def _build_basic_logger(self):
+        f = open('logger_template.yml', 'r')
+        fh = open('basic_logger.yml', 'w')
+        info = re.compile("info_log")
+        errors = re.compile("errors_log")
+        for line in f.readlines():
+            if info.search(line):
+                m = re.compile('info_log')
+                l = os.path.normpath(m.sub(os.path.join(self.xml_dir, 'info.log'), line))
+                fh.write(l.replace("\t", "\\t"))
+                continue
+            elif errors.search(line):
+                m = re.compile('errors_log')
+                l = m.sub(os.path.join(self.xml_dir, 'error.log'), line)
+                fh.write(l.replace("\t", "\\t"))
+                continue
+            fh.write(line)
+        fh.close()
+        f.close()
 
     def _arg_parse(self):
         parser = argparse.ArgumentParser(description='Convert mbox into XML.')
@@ -78,7 +101,7 @@ class DarcMailCLI(object):
         argdict = vars(args)
 
         self.account_name = argdict['account_name'].strip()
-        self.account_directory = os.path.abspath(argdict['account_directory'].strip())
+        self.account_directory = os.path.normpath(os.path.abspath(argdict['account_directory'].strip()))
         CommonMethods.set_store_rtf_body(False)
 
         if 'max_internal' in argdict.keys():
@@ -88,10 +111,10 @@ class DarcMailCLI(object):
             self.levels = self.NO_LEVELS
 
         if argdict['data_dir']:
-            base_path = os.path.abspath(os.path.join(self.account_directory, os.pardir))
+            base_path = os.path.normpath(os.path.abspath(os.path.join(self.account_directory, os.pardir)))
             CommonMethods.set_base_path(base_path)
-            self.data_dir = os.path.abspath(os.path.join(base_path, argdict['data_dir']))
-            self.xml_dir = os.path.abspath(os.path.join(base_path, "eaxs_xml"))
+            self.data_dir = os.path.normpath(os.path.abspath(os.path.join(base_path, argdict['data_dir'])))
+            self.xml_dir = os.path.normpath(os.path.abspath(os.path.join(base_path, "eaxs_xml")))
             if not os.path.exists(self.data_dir):
                 os.mkdir(self.data_dir)
 
@@ -101,7 +124,7 @@ class DarcMailCLI(object):
             CommonMethods.set_xml_dir(self.xml_dir)
         else:
             base_path = os.path.abspath(os.path.join(self.account_directory, os.pardir))
-            self.data_dir = os.path.join(base_path, "data")
+            self.data_dir = os.path.normpath(os.path.join(base_path, "data"))
             CommonMethods.set_attachment_dir(self.data_dir)
             CommonMethods.set_xml_dir(self.xml_dir)
 

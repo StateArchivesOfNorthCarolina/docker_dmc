@@ -10,6 +10,7 @@ from xml_help.CommonMethods import CommonMethods
 import mailbox
 from eaxs.Account import Account
 from eaxs.FolderType import Folder
+import logging
 
 
 class DirectoryWalker:
@@ -26,6 +27,7 @@ class DirectoryWalker:
         self.account = Account(account_name, xml_dir)
         self.account.start_account()
         self.account.write_global_id()
+        self.logger = logging.getLogger()
 
     def do_walk(self):
         for root, dirs, files in os.walk(self.root, topdown=False):
@@ -37,24 +39,24 @@ class DirectoryWalker:
                 pass
             else:
                 self.current_relpath = self.get_rel_path(mbx_path)
+                self.logger.info('Processing folder found at: {}\n'.format(mbx_path))
                 self.process_mbox(mbx_path)
                 fldr = Folder(self.current_relpath, mbx_path)
                 fldr.messages = self.messages
                 fldr.render()
+                self.logger.info('Wrote folder of size {} bytes\n'.format(fldr.mbox_size))
         self.account.close_account()
 
     def process_mbox(self, path):
         mbox = mailbox.mbox(path)
         self.messages = []
-        print('Processing mbox found at: {}\n'.format(path))
         try:
             for message in mbox:
                 e_msg = DmMessage(self.get_rel_path(path), CommonMethods.increment_local_id(), message)
                 e_msg.message = None
                 self.messages.append(e_msg)
-        except MemoryError as e:
-            print("TODO: Add Logger, handle Memory Error")
-        print('Processed mbox found at: {}\n'.format(path))
+        except MemoryError as er:
+            self.logger.error("Memory Error {}".format(er))
 
     def get_rel_path(self, path):
         if self.root == path:

@@ -33,7 +33,7 @@ handlers:
 
         formatter: simple
 
-        filename: E:\RESOURCES\TEST_RESOURCES\tomes\data\mboxes\OfficeoftheGovernor_UOC\eaxs_xml\info.log
+        filename: info_log
 
         maxBytes: 10485760 # 10MB
 
@@ -50,7 +50,7 @@ handlers:
 
         formatter: simple
 
-        filename: E:\RESOURCES\TEST_RESOURCES\tomes\data\mboxes\OfficeoftheGovernor_UOC\eaxs_xml\error.log
+        filename: errors_log
 
         maxBytes: 10485760 # 10MB
 

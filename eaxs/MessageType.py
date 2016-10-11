@@ -18,8 +18,6 @@ from eaxs.eaxs_helpers import MessageProcessor
 
 from lxml.ElementInclude import etree
 
-from collections import OrderedDict
-
 
 class DmMessage:
     """"""
@@ -44,19 +42,8 @@ class DmMessage:
             self.eol = CommonMethods.get_eol(self.message.as_string())  # type: str
         except:
             self.eol = restrict.LF
-        self.hash = CommonMethods.get_hash(self.message.as_bytes())  # type: Hash
 
-        self.mes_map = OrderedDict([
-            ("relative_path", "RelPath"),
-            ("local_id", "LocalId"),
-            ("message_id", "MessageId"),
-            ("mime_version", "MimeVersion"),
-            ("headers", "Header"),
-            ("status_flag", "StatusFlag"),
-            ("single_body", "SingleBody"),
-            ("multiple_body", "MultiBody"),
-            ("incomplete", "Incomplete"),
-            ("hash", "Hash")])
+        self.hash = CommonMethods.get_hash(self.message.as_bytes())  # type: Hash
 
         self._process_headers()
         self._process_payload()
@@ -80,7 +67,7 @@ class DmMessage:
         if parent is not None:
             self.local_id = str(self.local_id)
             message = etree.SubElement(parent, "Message")
-            for key, value in self.mes_map.items():
+            for key, value in CommonMethods.get_messagetype_map().items():
                 if self.__getattribute__(key) is not None:
                     if isinstance(self.__getattribute__(key), list):
                         # TODO: Handle this
