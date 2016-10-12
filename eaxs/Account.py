@@ -28,6 +28,7 @@ class Account(object):
         self.account = self.get_root_element_attributes()
         self.element_doc = None  # type: etree.Element
         self.logger = logging.getLogger()
+        self.current_eaxs_file = None  # type: str
 
     def write_global_id(self):
         try:
@@ -49,19 +50,33 @@ class Account(object):
         return '<GlobalId>{}</GlobalId>\n'.format(self.global_id)
 
     def start_account(self):
-        eaxs_file = os.path.join(self.xml_loc, self.xml_name)
+        if CommonMethods.get_chunksize() is not None:
+            self._start_account_chunks()
+            return
+        self.current_eaxs_file = os.path.join(self.xml_loc, self.xml_name)
         try:
-            fh = codecs.open(eaxs_file, "ab", "utf-8")
+            fh = codecs.open(self.current_eaxs_file, "ab", "utf-8")
             fh.write(self.get_root_element_attributes())
             fh.close()
-            CommonMethods.set_eaxs_file(eaxs_file)
+            CommonMethods.set_eaxs_file(self.current_eaxs_file)
         except FileNotFoundError as e:
-            self.logger.error("{}: {}".format(e, eaxs_file))
+            self.logger.error("{}: {}".format(e, self.current_eaxs_file))
 
     def close_account(self):
         try:
-            fh = codecs.open(os.path.join(self.xml_loc, self.xml_name), "a", "utf-8")
+            fh = codecs.open(os.path.join(self.current_eaxs_file), "a", "utf-8")
             fh.write("</Account>\n")
             fh.close()
         except FileNotFoundError as e:
-            self.logger.error("{}: {}".format(e, os.path.join(self.xml_loc, self.xml_name)))
+            self.logger.error("{}: {}".format(e, os.path.join(self.current_eaxs_file)))
+
+    def _start_account_chunks(self):
+        fn = '{}_{}_{}.xml'.format(self.xml_name, "LID", CommonMethods.get_current_local_id())
+        self.current_eaxs_file = os.path.join(self.xml_loc, fn)
+        try:
+            fh = codecs.open(self.current_eaxs_file, "ab", "utf-8")
+            fh.write(self.get_root_element_attributes())
+            fh.close()
+            CommonMethods.set_eaxs_file(self.current_eaxs_file)
+        except FileNotFoundError as e:
+            self.logger.error("{}: {}".format(e, self.current_eaxs_file))

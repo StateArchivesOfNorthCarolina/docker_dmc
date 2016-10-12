@@ -15,6 +15,14 @@ __LOCALID__= 0  # type: int
 class CommonMethods:
 
     @staticmethod
+    def set_chunk_size(size=None):
+        globals()["__CHUNKS__"] = size
+
+    @staticmethod
+    def get_chunksize():
+        return globals()["__CHUNKS__"]
+
+    @staticmethod
     def get_messagetype_map():
         return OrderedDict([
             ("relative_path", "RelPath"),

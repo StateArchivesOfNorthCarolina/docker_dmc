@@ -133,6 +133,7 @@ class DarcMailCLI(object):
 
         if 'chunk' in argdict.keys():
             self.chunksize = argdict['chunk']
+            CommonMethods.set_chunk_size(self.chunksize)
 
     def validate(self):
         vs = ValidateStructure(self)

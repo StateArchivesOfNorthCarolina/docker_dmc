@@ -16,7 +16,7 @@ class Folder:
 
     def __init__(self, relpath, mbox_path):
         """Constructor for Folder"""
-        self.name = re.sub('\.\\\\', "", relpath)  # type: str
+        self.name = mbox_path.split(os.sep)[-2]  # type: str
         self.relpath = relpath
         self.messages = []  # type: list[DmMessage]
         self.folders = []  # type: list[Folder]
