@@ -59,6 +59,7 @@ class DirectoryWalker:
                 self.logger.info('Messages processed: {}'.format(self.total_messages_processed))
                 fldr = None
                 self.messages = []
+        self.account.close_account()
 
     def process_mbox(self, path):
         mbox = mailbox.mbox(path)
