@@ -16,7 +16,7 @@ from urllib.parse import unquote
 import logging
 from lxml.ElementInclude import etree
 from collections import OrderedDict
-
+import re
 
 class SingleBody:
     """"""
@@ -48,10 +48,10 @@ class SingleBody:
         self.phantom_body = None  # type: str
         self.append_body = True
         self.logger = logging.getLogger()
+        self.content_types_no_store = re.compile("text")
 
     def process_headers(self):
         for header, value in self.payload.items():
-
             if header == "Content-Type":
                 expression = CommonMethods.get_content_type(value)
                 if len(expression) > 1:
@@ -79,7 +79,7 @@ class SingleBody:
             self.logger.info('Not Captured {} : {}'.format(header, value))
 
     def process_body(self):
-        if not self.content_type.__contains__("plain"):
+        if not self.content_types_no_store.search(self.content_type):
             if self._store_body():
                 extbody = ExtBodyContent()
                 extbody.char_set = self.charset
@@ -88,10 +88,12 @@ class SingleBody:
                 extbody.eol = CommonMethods.get_eol(self.payload.get_payload())
                 extbody.hash = CommonMethods.get_hash(self.payload.as_bytes())
                 extbody.body_content = self.payload.get_payload()
-                children = OrderedDict({"ContentType": self.content_type,
+                children = OrderedDict({
+                            "ContentType": self.content_type,
                             "Disposition": self.disposition,
                             "DispositionFileName": self.disposition_file_name,
-                            "ContentTransferEncoding": self.transfer_encoding})
+                            "ContentTransferEncoding": self.transfer_encoding
+                })
                 extbody.build_xml_file(children)
                 self.ext_body_content.append(extbody)
                 self.payload = None
@@ -101,6 +103,8 @@ class SingleBody:
 
     def _store_body(self):
         if self.disposition_file_name != "rtf-body.rtf":
+            return True
+        if self.content_type.__contains__("richtext"):
             return True
         elif not CommonMethods.store_rtf_body():
             self.disposition_comments = "Attachment is duplicate of BodyContent: Not saved"
