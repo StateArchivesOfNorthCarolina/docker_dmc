@@ -13,6 +13,7 @@ from eaxs.eaxs_helpers.Render import Render
 from collections import OrderedDict
 import codecs
 from lxml.ElementInclude import etree
+import logging
 
 
 class ExtBodyContent:
@@ -31,6 +32,7 @@ class ExtBodyContent:
         self.hash = None  # type: Hash
         self.body_content = None  # type: str
         self.gid = uuid.uuid4()  # type: uuid
+        self.logger = logging.getLogger()
 
     def set_hash(self, hdigest, ht='SHA1'):
         self.hash = Hash(hdigest, ht)
@@ -54,14 +56,10 @@ class ExtBodyContent:
         :param children:
         :return:
         """
-        chillen = OrderedDict()
-        chillen["LocalUniqueID"] = self.gid.__str__()
-        for k, v in children.items():
-            chillen[k] = v
-        chillen["Content"] = self.body_content
-        rend = Render("ExternalBodyPart", chillen)
-        self.write_ext_body(rend.render())
-        self.body_content = None
+        if CommonMethods.get_dedupe():
+            self._build_dedup(children)
+        else:
+            self._build_nodedup(children)
 
     def render(self, parent):
         """
@@ -71,6 +69,7 @@ class ExtBodyContent:
         """
         self.local_id = str(self.local_id)
         self.xml_wrapped = str(self.xml_wrapped)
+
         ext_bdy_head = etree.SubElement(parent, "ExtBodyContent")
         child1 = etree.SubElement(ext_bdy_head, "RelPath")
         child1.text = self.rel_path
@@ -86,6 +85,39 @@ class ExtBodyContent:
         child6.text = self.eol
         self.hash.render(ext_bdy_head)
 
+    def _build_dedup(self, children):
+        """
+       :type children : OrderedDict
+       :param children:
+       :return:
+       """
+        if CommonMethods.set_ext_hash(self.gid, self.hash):
+            chillen = OrderedDict()
+            chillen["LocalUniqueID"] = self.gid.__str__()
+            for k, v in children.items():
+                chillen[k] = v
+            chillen["Content"] = self.body_content
+            rend = Render("ExternalBodyPart", chillen)
+            self.write_ext_body(rend.render())
+            self.body_content = None
+        else:
+            self.gid = CommonMethods.get_ext_gid(self.hash.value)
+            self.rel_path = ".{}{}{}{}.xml".format(os.sep, CommonMethods.get_attachment_directory(), os.sep, self.gid.__str__())
+            self.body_content = None
+            self.logger.info("Duplicate Attachment: {}".format(self.gid.__str__()))
 
-
+    def _build_nodedup(self, children):
+            """
+           :type children : OrderedDict
+           :param children:
+           :return:
+           """
+            chillen = OrderedDict()
+            chillen["LocalUniqueID"] = self.gid.__str__()
+            for k, v in children.items():
+                chillen[k] = v
+            chillen["Content"] = self.body_content
+            rend = Render("ExternalBodyPart", chillen)
+            self.write_ext_body(rend.render())
+            self.body_content = None
 

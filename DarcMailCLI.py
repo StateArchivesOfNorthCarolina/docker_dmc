@@ -103,6 +103,8 @@ class DarcMailCLI(object):
         self.account_name = argdict['account_name'].strip()
         self.account_directory = os.path.normpath(os.path.abspath(argdict['account_directory'].strip()))
         CommonMethods.set_store_rtf_body(False)
+        CommonMethods.init_hash_dict()
+        CommonMethods.set_dedupe()
 
         if 'max_internal' in argdict.keys():
             self.max_internal = int(argdict['max_internal'])
@@ -120,8 +122,9 @@ class DarcMailCLI(object):
 
             if not os.path.exists(self.xml_dir):
                 os.mkdir(self.xml_dir)
-            CommonMethods.set_attachment_dir(self.data_dir)
-            CommonMethods.set_xml_dir(self.xml_dir)
+
+            CommonMethods.set_attachment_dir(self.data_dir.split(os.sep)[-1])
+            CommonMethods.set_xml_dir(self.xml_dir.split(os.sep)[-1])
         else:
             base_path = os.path.abspath(os.path.join(self.account_directory, os.pardir))
             self.data_dir = os.path.normpath(os.path.join(base_path, "data"))

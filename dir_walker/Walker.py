@@ -44,7 +44,7 @@ class DirectoryWalker:
 
                 if self.total_messages_processed == 0:
                     self.start_account()
-                if self.chunks > CommonMethods.get_chunksize():
+                if self.chunks > CommonMethods.get_chunksize() != 0:
                     # Close old account
                     self.close_account()
                     self.start_account()

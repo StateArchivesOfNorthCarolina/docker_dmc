@@ -50,7 +50,7 @@ class Account(object):
         return '<GlobalId>{}</GlobalId>\n'.format(self.global_id)
 
     def start_account(self):
-        if CommonMethods.get_chunksize() is not None:
+        if CommonMethods.get_chunksize() != 0:
             self._start_account_chunks()
             return
         self.current_eaxs_file = os.path.join(self.xml_loc, self.xml_name)

@@ -15,6 +15,10 @@ __LOCALID__= 0  # type: int
 class CommonMethods:
 
     @staticmethod
+    def init_hash_dict():
+        globals()["__HASH_LIST__"] = {}
+
+    @staticmethod
     def set_chunk_size(size=None):
         globals()["__CHUNKS__"] = size
 
@@ -185,15 +189,6 @@ class CommonMethods:
         return globals()["__STORE_RTF_BODY__"]
 
     @staticmethod
-    def replace_escapes(text):
-        for c in text:
-           print(c)
-        item = re.sub("&lt;", "<", text)
-        item = re.sub("&gt;", ">", item)
-        item = re.sub("&quot;", "\"", item)
-        return item
-
-    @staticmethod
     def set_eaxs_file(file_name):
         globals()["__EAXS_FILE__"] = file_name
 
@@ -201,4 +196,23 @@ class CommonMethods:
     def get_eaxs_filename():
         return globals()["__EAXS_FILE__"]
 
+    @staticmethod
+    def set_ext_hash(gid, hash):
+        hash_list = globals()["__HASH_LIST__"]  # type: dict
+        if hash.value not in hash_list:
+            hash_list[hash.value] = gid
+            return True
+        return False
 
+    @staticmethod
+    def get_ext_gid(hash):
+        hash_list = globals()["__HASH_LIST__"]  # type: dict
+        return hash_list[hash]
+
+    @staticmethod
+    def set_dedupe(val=True):
+        globals()["__DEDUPE__"] = val
+
+    @staticmethod
+    def get_dedupe():
+        return globals()["__DEDUPE__"]
