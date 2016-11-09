@@ -50,6 +50,6 @@ class HandleDarcMailCLI:
         print(self.data)
 
 if __name__ == "__main__":
-    HOST, PORT = "127.0.0.1", 57775
+    HOST, PORT = "0.0.0.0", 57775
     server = socketserver.TCPServer((HOST, PORT), TomesTCPHandler)
     server.serve_forever()
