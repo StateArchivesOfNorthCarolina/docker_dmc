@@ -127,7 +127,15 @@ class DarcMailCLI(object):
             CommonMethods.set_xml_dir(self.xml_dir.split(os.sep)[-1])
         else:
             base_path = os.path.abspath(os.path.join(self.account_directory, os.pardir))
+            CommonMethods.set_base_path(base_path)
             self.data_dir = os.path.normpath(os.path.join(base_path, "data"))
+            self.xml_dir = os.path.normpath(os.path.abspath(os.path.join(base_path, "eaxs_xml")))
+            if not os.path.exists(self.data_dir):
+                os.mkdir(self.data_dir)
+
+            if not os.path.exists(self.xml_dir):
+                os.mkdir(self.xml_dir)
+
             CommonMethods.set_attachment_dir(self.data_dir)
             CommonMethods.set_xml_dir(self.xml_dir)
 
