@@ -139,6 +139,8 @@ class DarcMailCLI(object):
             CommonMethods.set_chunk_size(self.chunksize)
 
     def validate(self):
+        # TODO: Determine what constitutes a valid structure and what does not.  This basically follows assumptions made
+        # TODO: by the original DarcMail, many of which are no longer valid in this context.
         vs = ValidateStructure(self)
         vs.validate()
         self.mbox_structure = vs.structure

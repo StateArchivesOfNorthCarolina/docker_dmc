@@ -13,13 +13,16 @@ from eaxs.ExtBodyContentType import ExtBodyContent
 from email.message import Message
 from xml_help.CommonMethods import CommonMethods
 from urllib.parse import unquote
-import logging
 from lxml.ElementInclude import etree
 from collections import OrderedDict
+import logging
 import re
 
+
 class SingleBody:
-    """"""
+    """
+
+    """
     
     def __init__(self, payload):
         """Constructor for SingleBody
