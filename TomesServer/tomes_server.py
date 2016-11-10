@@ -1,6 +1,7 @@
 import socketserver
 import json
 import subprocess
+import os
 
 class TomesTCPHandler(socketserver.BaseRequestHandler):
     def handle(self):
@@ -39,6 +40,8 @@ class HandleReadPST:
     def __init__(self, data):
         self.data = data
         self.account_name = data["account_name"]
+        if not os.path.exists(self.account_name):
+            os.mkdir(self.account_name)
         self.target_file = data["target_file"]
         subprocess.run(["readpst", "-o", self.account_name, self.target_file])
         print(self.data)
