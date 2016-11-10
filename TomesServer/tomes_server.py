@@ -40,7 +40,7 @@ class HandleReadPST:
         self.data = data
         self.account_name = data["account_name"]
         self.target_file = data["target_file"]
-        subprocess.run(["readpst", "-o", self.account_name, self.target_file], stdout=subprocess.PIPE)
+        subprocess.run(["readpst", "-o", self.account_name, self.target_file])
         print(self.data)
 
 
