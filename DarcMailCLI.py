@@ -48,16 +48,19 @@ class DarcMailCLI(object):
         self.logger = logging.getLogger()
 
     def _load_logger(self):
-        if not os.path.exists('basic_logger.yml'):
+        self.CWD = os.getcwd()
+        self.basic_logger_path = '{}{}basic_logger.yml'.format(self.CWD, os.path.sep)
+        if not os.path.exists(self.basic_logger_path):
             self._build_basic_logger()
 
-        f = open('basic_logger.yml', 'r')
+        f = open(self.basic_logger_path, 'r')
         config = yaml.safe_load(f.read())
         logging.config.dictConfig(config)
 
     def _build_basic_logger(self):
-        f = open('logger_template.yml', 'r')
-        fh = open('basic_logger.yml', 'w')
+        self.logger_template_path = '{}{}logger_template.yml'.format(self.CWD, os.path.sep)
+        f = open(self.logger_template_path, 'r')
+        fh = open(self.basic_logger_path, 'w')
         info = re.compile("info_log")
         errors = re.compile("errors_log")
         for line in f.readlines():
@@ -273,8 +276,8 @@ class ValidateStructure(object):
         # Jeremy M. Gibson (State Archives of North Carolina)
         # 2016-07-12 Rename the duplicate .mbox's to make them unique
 
-        @type list duplicate_list
-        @type list inventory:
+        @type duplicate_list: list
+        @type inventory: list
         """
         for l in duplicate_list:
             # remove first item from the list
