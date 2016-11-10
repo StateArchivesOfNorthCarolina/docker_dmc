@@ -49,7 +49,7 @@ class DarcMailCLI(object):
 
     def _load_logger(self):
         self.CWD = os.getcwd()
-        self.basic_logger_path = '{}{}basic_logger.yml'.format(self.CWD, os.path.sep)
+        self.basic_logger_path = '/home/tomes/DarcMailCLI/basic_logger.yml'
         if not os.path.exists(self.basic_logger_path):
             self._build_basic_logger()
 
@@ -58,7 +58,7 @@ class DarcMailCLI(object):
         logging.config.dictConfig(config)
 
     def _build_basic_logger(self):
-        self.logger_template_path = '{}{}logger_template.yml'.format(self.CWD, os.path.sep)
+        self.logger_template_path = '/home/tomes/DarcMailCLI/logger_template.yml'
         f = open(self.logger_template_path, 'r')
         fh = open(self.basic_logger_path, 'w')
         info = re.compile("info_log")
