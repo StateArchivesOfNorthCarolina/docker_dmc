@@ -57,7 +57,7 @@ class DarcMailCLI(object):
         logging.config.dictConfig(config)
 
     def _build_basic_logger(self):
-        self.logger_template_path = os.path.join(os.getcwd(), 'logger_templatte.yml')
+        self.logger_template_path = os.path.join(os.getcwd(), 'logger_template.yml')
         f = open(self.logger_template_path, 'r')
         fh = open(self.basic_logger_path, 'w')
         info = re.compile("info_log")
