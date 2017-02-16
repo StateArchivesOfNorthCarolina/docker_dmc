@@ -79,25 +79,37 @@ class DarcMailCLI(object):
 
     def _arg_parse(self):
         parser = argparse.ArgumentParser(description='Convert mbox into XML.')
+
         parser.add_argument('--account', '-a', dest='account_name', required=True,
                             help='email account name')
+
         parser.add_argument('--directory', '-d', dest='account_directory', required=True,
                             help='directory to hold all files for this account')
+
         parser.add_argument('--folder', '-f', dest='folder_name',
                             help='folder name (generate XML only for this one folder)')
+
         parser.add_argument('--max_internal', '-m', dest='max_internal',
                             type=int, default=self.NO_LIMIT,
                             help='maximum size in bytes for an internally-stored attachment, default = no limit')
+
         parser.add_argument('--chunk', '-c', dest='chunk', type=int,
                             default=self.NO_CHUNK,
-                            help='number of messages to put in one output XML file, '+ \
-                                 'default = no limit')
+                            help='An approximate number of messages to put in one output XML file. '
+                                 'NOTE: This this will be approximate because '
+                                 'DarcMailCLI maintains the integrity of the Folder. A chunk test is made after a '
+                                 'folder is processed. If the total number of processed messages is below the chunk '
+                                 'size, the next folder will be added to the current XML file.  If it exceeds '
+                                 'the chunk limit the a new file will be opened. Each file will have the '
+                                 'starting LocalID as part of the filename.  default = no limit or all messages '
+                                 'in one file.')
+
         parser.add_argument('--no_subdirectories', '-n', dest='no_subdirectories', action='store_true',
-                            help='do NOT make subdirectories to hold external content' + \
+                            help='do NOT make subdirectories to hold external content'
                                  '(default = make subdirectories)')
-        parser.add_argument('--data-dir', '-dd', dest='data_dir', type=str,
-                            help='path to store the Email Account XML. Default is in the same directory as the'
-                                 'account directory under a new folder /data')
+
+        parser.add_argument('--data-dir', '-dd', dest='data_dir', type=str, default='attachments',
+                            help='path to store the account attachments. DEFAULT: "attachments"')
 
         args = parser.parse_args()
         argdict = vars(args)
