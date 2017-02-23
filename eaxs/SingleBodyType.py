@@ -17,7 +17,6 @@ from lxml.ElementInclude import etree
 from collections import OrderedDict
 import logging
 import re
-import bleach
 
 class SingleBody:
     """
