@@ -4,12 +4,15 @@ import hashlib
 from eaxs.HashType import Hash
 from lxml.ElementInclude import etree
 from collections import OrderedDict
+import logging
+import base64
 
 global __LOCALID__
 global __ROOTPATH__
 global __RELPATH__
 
 __LOCALID__= 0  # type: int
+logger = logging.getLogger("CommonMethods")
 
 
 class CommonMethods:
@@ -98,13 +101,26 @@ class CommonMethods:
                 return etree.CDATA(text)
                 pass
             return text
-        except (ValueError, TypeError) as e:
+        except ValueError as ve:
+            raise
+            """
+            #TODO: Separate the exceptions.  Decide what to do with TypeErrors
+            #TODO: This is realted to the non-utf8 characters found in some libpst v0.6.45 output
+            logger.name = "cdata_wrap"
+            logger.error(ve)
             if text is None:
                 return "Error: No Recipient Found"
             else:
-                t = re.sub("\[\[", "\\[\\[", text)
-                t = re.sub("]]", "\]\]", t)
-                CommonMethods.cdata_wrap(t)
+
+                """
+        except TypeError as te:
+            """
+            logger.name = "cdata_wrap"
+            logger.error(te)
+            if text is None:
+                return "Error: No Recipient Found"
+                """
+            raise
 
     @staticmethod
     def get_content_type(content_type):

@@ -22,7 +22,7 @@ class MessageProcessor:
         self.payloads = message.get_payload()  # type: list[Message]
         self.single_bodies = []  # type: list[SingleBody]
         self.relpath = relpath
-        self.logger = logging.getLogger()
+        self.logger = logging.getLogger("MessageProcessor")
 
     def process_payloads(self):
         multi_body = MultiBody(self.message)
@@ -33,8 +33,7 @@ class MessageProcessor:
             '''
             try:
                 if payload.is_multipart():
-                    # TODO: Handle this.
-                    pass
+                    self.logger.info("{} is a multipart message".format(self.message.get("Message-ID")))
                 else:
                     single_body = SingleBody(payload)
                     single_body.process_headers()
@@ -42,7 +41,7 @@ class MessageProcessor:
                     single_body.payload = None
                     self.single_bodies.append(single_body)
             except AttributeError as e:
-                self.logger.error("{}".format(e))
+                self.logger.error("{} {}".format(self.message.get("Message-ID"), e))
         multi_body.single_bodies = self.single_bodies
         multi_body.payload = None
         return multi_body

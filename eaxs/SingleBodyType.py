@@ -17,7 +17,7 @@ from lxml.ElementInclude import etree
 from collections import OrderedDict
 import logging
 import re
-
+import bleach
 
 class SingleBody:
     """
@@ -50,7 +50,7 @@ class SingleBody:
         self.child_message = None  # type: ChildMessage
         self.phantom_body = None  # type: str
         self.append_body = True
-        self.logger = logging.getLogger()
+        self.logger = logging.getLogger("SingleBodyType")
         self.content_types_no_store = re.compile("text")
 
     def process_headers(self):
@@ -101,7 +101,12 @@ class SingleBody:
                 self.ext_body_content.append(extbody)
                 self.payload = None
         else:
-            self.body_content = CommonMethods.cdata_wrap(self.payload.get_payload())
+            t = re.sub("\[\[", "\\[\\[", self.payload.get_payload())
+            t = re.sub("]]", "\]\]", t)
+            try:
+                self.body_content = CommonMethods.cdata_wrap(t)
+            except ValueError as ve:
+                self.logger.error("{}".format(ve))
             self.payload = None
 
     def _store_body(self):

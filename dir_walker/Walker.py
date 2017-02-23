@@ -25,7 +25,7 @@ class DirectoryWalker:
         self.current_relpath = None  # type: str
         self.xml_dir = xml_dir
         self.account = Account(account_name, xml_dir)
-        self.logger = logging.getLogger()
+        self.logger = logging.getLogger("DirectoryWalker")
         self.total_messages_processed = 0  # type: int
         self.chunks = 0  # type: int
         self.new_account = True
@@ -60,6 +60,7 @@ class DirectoryWalker:
                 fldr = None
                 self.messages = []
         self.account.close_account()
+        self.logger.info('Total messages processed: {}'.format(self.total_messages_processed))
 
     def process_mbox(self, path):
         mbox = mailbox.mbox(path)

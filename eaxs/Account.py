@@ -27,7 +27,7 @@ class Account(object):
         self.xml_name = "{}.xml".format(self.global_id)
         self.account = self.get_root_element_attributes()
         self.element_doc = None  # type: etree.Element
-        self.logger = logging.getLogger()
+        self.logger = logging.getLogger("Account")
         self.current_eaxs_file = None  # type: str
 
     def write_global_id(self):

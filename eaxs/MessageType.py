@@ -6,6 +6,7 @@
 ##############################################################
 
 from email.message import Message
+import email
 
 import eaxs.eaxs_helpers.Restrictors as restrict
 from eaxs.HashType import Hash
@@ -17,6 +18,7 @@ from xml_help.CommonMethods import CommonMethods
 from eaxs.eaxs_helpers import MessageProcessor
 
 from lxml.ElementInclude import etree
+import logging
 
 
 class DmMessage:
@@ -24,13 +26,16 @@ class DmMessage:
 
     def __init__(self, rel_path, local_id, message):
         """Constructor for Message"""
+        self.logger = logging.getLogger("MessageType")
         self.message = message  # type: Message
         self.relative_path = rel_path  # type: str
         self.local_id = local_id
-        self.message_id = CommonMethods.cdata_wrap(self.message.get("Message-ID"))  # type: str
+        self.message_id = ""  # type: str
+        if self.message.get("Message-ID") is not None:
+            self.message_id = CommonMethods.cdata_wrap(self.message.get("Message-ID"))  # type: str
+        self.m_from = self.message.get("From")  # type: str
+        self.m_to = self.message.get("To")  # type: str
         self.mime_version = self.message.get("MIME-Version")  # type: str
-        self.m_from = CommonMethods.cdata_wrap(self.message.get("From"))  # type: str
-        self.m_to = CommonMethods.cdata_wrap(self.message.get("To"))  # type: str
         self.subject = self.message.get("Subject")  # type: str
         self.reference = []  # type: []
         self.headers = []  # type: list[Header]
@@ -50,6 +55,8 @@ class DmMessage:
 
     def _process_headers(self):
         for key, value in self.message.items():
+            if type(value) is email.header.Header:
+                value = value.__str__()
             h = Header(key, value)
             self.headers.append(h)
 
@@ -70,7 +77,7 @@ class DmMessage:
             for key, value in CommonMethods.get_messagetype_map().items():
                 if self.__getattribute__(key) is not None:
                     if isinstance(self.__getattribute__(key), list):
-                        # TODO: Handle this
+                        #TODO: Handle this
                         for item in self.__getattribute__(key):
                             if isinstance(item, Header):
                                 item.render(message)
@@ -85,4 +92,3 @@ class DmMessage:
                         continue
                 child = etree.SubElement(message, value)
                 child.text = self.__getattribute__(key)
-                pass

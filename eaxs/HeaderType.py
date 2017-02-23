@@ -16,7 +16,7 @@ class Header:
         """Constructor for Header"""
         self.cdata = cdata
         self.name = name  # type: str
-        self.value = CommonMethods.cdata_wrap(value)  # type: str
+        self.value = value # type: str
 
     def render(self, parent):
         """
@@ -28,5 +28,11 @@ class Header:
         child1 = etree.SubElement(child, "Name")
         child1.text = self.name
         child2 = etree.SubElement(child, "Value")
-        child2.text = self.value
+        try:
+            child2.text = CommonMethods.cdata_wrap(self.value)
+        except ValueError as ve:
+            pass
+        except TypeError as te:
+            pass
+
 

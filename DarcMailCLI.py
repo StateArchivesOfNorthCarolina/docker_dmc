@@ -45,7 +45,7 @@ class DarcMailCLI(object):
 
         self._arg_parse()
         self._load_logger()
-        self.logger = logging.getLogger()
+        self.logger = logging.getLogger("DarcMailCLI")
 
     def _load_logger(self):
         self.basic_logger_path = os.path.join(os.getcwd(), 'basic_logger.yml')
