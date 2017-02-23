@@ -11,12 +11,14 @@ from eaxs.ParameterType import Parameter
 from eaxs.IntBodyContentType import IntBodyContent
 from eaxs.ExtBodyContentType import ExtBodyContent
 from email.message import Message
+from email.charset import Charset
 from xml_help.CommonMethods import CommonMethods
 from urllib.parse import unquote
 from lxml.ElementInclude import etree
 from collections import OrderedDict
 import logging
 import re
+
 
 class SingleBody:
     """
@@ -50,7 +52,7 @@ class SingleBody:
         self.phantom_body = None  # type: str
         self.append_body = True
         self.logger = logging.getLogger("SingleBodyType")
-        self.content_types_no_store = re.compile("text")
+        #self.content_types_no_store = re.compile("text/plain")
 
     def process_headers(self):
         for header, value in self.payload.items():
@@ -81,7 +83,7 @@ class SingleBody:
             self.logger.info('Not Captured {} : {}'.format(header, value))
 
     def process_body(self):
-        if not self.content_types_no_store.search(self.content_type):
+        if not self._is_readable():
             if self._store_body():
                 extbody = ExtBodyContent()
                 extbody.char_set = self.charset
@@ -120,6 +122,16 @@ class SingleBody:
 
     def get_attributes(self):
        pass
+
+    def _is_readable(self):
+        if self.charset is None:
+            return False
+        cs = Charset(self.charset)
+        if self.charset == "us-ascii":
+            return True
+        if cs.get_body_encoding() == "quoted-printable":
+            return True
+        return False
 
     def render(self, parent):
         """

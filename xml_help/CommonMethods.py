@@ -103,23 +103,7 @@ class CommonMethods:
             return text
         except ValueError as ve:
             raise
-            """
-            #TODO: Separate the exceptions.  Decide what to do with TypeErrors
-            #TODO: This is realted to the non-utf8 characters found in some libpst v0.6.45 output
-            logger.name = "cdata_wrap"
-            logger.error(ve)
-            if text is None:
-                return "Error: No Recipient Found"
-            else:
-
-                """
         except TypeError as te:
-            """
-            logger.name = "cdata_wrap"
-            logger.error(te)
-            if text is None:
-                return "Error: No Recipient Found"
-                """
             raise
 
     @staticmethod
