@@ -8,6 +8,8 @@ from xml.etree.ElementTree import Element
 from xml.etree.ElementTree import SubElement
 from xml.etree.ElementTree import tostring
 from xml.dom import minidom
+import xml.parsers.expat
+import base64
 
 
 class Render:
@@ -30,8 +32,18 @@ class Render:
 
     def render(self):
         rough = tostring(self.root, 'utf-8')
-        reparsed = minidom.parseString(rough)
-        return reparsed.toprettyxml(indent="  ")
+        try:
+            reparsed = minidom.parseString(rough)
+            text = reparsed.toprettyxml(indent="  ")
+            return text
+        except xml.parsers.expat.ExpatError as e:
+            # This is a potential problem where the binary is not actually base64 encoded
+            # TODO: Write corrupted bytes to a file.
+            self.children['Content'] = "ERROR: original attachment is corrupted"
+            self.root = Element('ExternalBodyPart')
+            self._build_element()
+            return self.render()
+
 
     def add_child(self, name, value):
         child = SubElement(self.root, name)

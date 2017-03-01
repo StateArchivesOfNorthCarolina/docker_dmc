@@ -95,10 +95,11 @@ class ExtBodyContent:
             chillen = OrderedDict()
             chillen["LocalUniqueID"] = self.gid.__str__()
             for k, v in children.items():
-                chillen[k] = v
+                chillen[k] = str(v).strip("\"")
             chillen["Content"] = self.body_content
             rend = Render("ExternalBodyPart", chillen)
-            self.write_ext_body(rend.render())
+            text = rend.render()
+            self.write_ext_body(text)
             self.body_content = None
         else:
             self.gid = CommonMethods.get_ext_gid(self.hash.value)

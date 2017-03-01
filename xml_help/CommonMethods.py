@@ -5,7 +5,6 @@ from eaxs.HashType import Hash
 from lxml.ElementInclude import etree
 from collections import OrderedDict
 import logging
-import base64
 
 global __LOCALID__
 global __ROOTPATH__
@@ -116,9 +115,12 @@ class CommonMethods:
 
         if re.search(';', content_type) is not None:
             # has a secondary component
-            mime = content_type.split(";")[0]
-            key, value = content_type.split(";")[1].split("=")
-            return [mime, key.strip(), value.strip("\"")]
+            try:
+                mime = content_type.split(";")
+                key, value = re.split("=", mime[1], maxsplit=1)
+            except ValueError as ve:
+                raise
+            return [mime[0], key.strip(), value.strip("\"")]
         else:
             # is only a mime type
             return [content_type]

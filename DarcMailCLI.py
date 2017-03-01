@@ -16,6 +16,7 @@ import logging.config
 import yaml
 from dir_walker import Walker
 from xml_help.CommonMethods import CommonMethods
+from timeit import default_timer as timer
 
 
 class DarcMailCLI(object):
@@ -174,6 +175,7 @@ class DarcMailCLI(object):
         :return:
         '''
         wlk = Walker.DirectoryWalker(self.account_directory, self.xml_dir, self.account_name)
+        wlk._gather_mboxes()
         wlk.do_walk()
 
 
@@ -308,7 +310,9 @@ class ValidateStructure(object):
 if __name__ == "__main__":
     dmcli = DarcMailCLI()
     if dmcli.validate():
-        print("Valid")
+        start = timer()
         dmcli.convert()
+        end = timer()
+        print(end-start)
     else:
         print("Invalid Folder Structure")

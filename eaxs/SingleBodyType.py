@@ -18,6 +18,8 @@ from lxml.ElementInclude import etree
 from collections import OrderedDict
 import logging
 import re
+import bleach
+from bs4 import BeautifulSoup as bsoup
 
 
 class SingleBody:
@@ -52,16 +54,24 @@ class SingleBody:
         self.phantom_body = None  # type: str
         self.append_body = True
         self.logger = logging.getLogger("SingleBodyType")
-        #self.content_types_no_store = re.compile("text/plain")
+        self.body_only = False
 
     def process_headers(self):
+        if isinstance(self.payload, str):
+            self.body_content = self.payload
+            self.body_only = True
+            return
+
         for header, value in self.payload.items():
             if header == "Content-Type":
                 expression = CommonMethods.get_content_type(value)
                 if len(expression) > 1:
                     self.content_type = expression[0]
-                    self.charset = expression[2]
-                    # self.logger.info('Captured {} : {}'.format(header, value))
+                    # Is this a charset identification
+                    if expression[1] == 'charset':
+                        self.charset = expression[2]
+                    else:
+                        self.content_type_param.append(Parameter(expression[1], expression[2]))
                     continue
                 else:
                     self.content_type = expression[0]
@@ -102,15 +112,28 @@ class SingleBody:
                 self.ext_body_content.append(extbody)
                 self.payload = None
         else:
-            t = re.sub("\[\[", "\\[\\[", self.payload.get_payload())
+            # This is a plaintext BodyContent block
+            # Strip HTML from the block and escape with cdata if necessary
+            self._process_plaintext_body()
+
+    def _process_plaintext_body(self):
+        t = ""
+        if isinstance(self.payload, Message):
+            t = re.sub("\[\[", "\\[\\[", self._soupify(self.payload.get_payload()))
             t = re.sub("]]", "\]\]", t)
-            try:
-                self.body_content = CommonMethods.cdata_wrap(t)
-            except ValueError as ve:
-                self.logger.error("{}".format(ve))
-            self.payload = None
+        elif isinstance(self.payload, str):
+            t = re.sub("\[\[", "\\[\\[", self._soupify(self.payload))
+            t = re.sub("]]", "\]\]", t)
+
+        try:
+            self.body_content = CommonMethods.cdata_wrap(t)
+        except ValueError as ve:
+            self.logger.error("{}".format(ve))
+        self.payload = None
 
     def _store_body(self):
+        # Checks to see if the ExtBody is a duplicate of the email body.
+        # Remove and note in the ExtBody Disposition.
         if self.disposition_file_name != "rtf-body.rtf":
             return True
         if self.content_type.__contains__("richtext"):
@@ -124,14 +147,24 @@ class SingleBody:
        pass
 
     def _is_readable(self):
+        if self.body_only:
+            return True
         if self.charset is None:
             return False
+
         cs = Charset(self.charset)
         if self.charset == "us-ascii":
             return True
         if cs.get_body_encoding() == "quoted-printable":
             return True
         return False
+
+    def _soupify(self, body):
+        soup = bsoup(body, "lxml")
+        for script in soup(["script", "style"]):
+            script.extract()
+        text = soup.get_text()
+        return text
 
     def render(self, parent):
         """
@@ -152,4 +185,7 @@ class SingleBody:
                     continue
 
                 child = etree.SubElement(single_child_head, value)
-                child.text = self.__getattribute__(key)
+                try:
+                    child.text = self.__getattribute__(key)
+                except TypeError as e:
+                    print()
