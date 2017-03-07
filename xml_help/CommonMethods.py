@@ -135,7 +135,7 @@ class CommonMethods:
         :param text:
         :return:
         '''
-        return text.decode('ascii', 'ignore').encode("utf-8")
+        return text.decode('ascii', 'ignore')
 
     @staticmethod
     def get_content_type(content_type):

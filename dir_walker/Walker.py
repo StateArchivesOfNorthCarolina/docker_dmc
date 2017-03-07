@@ -39,6 +39,7 @@ class DirectoryWalker:
         self.new_account = True
         self.mboxes = []  # type: list
         self.new_folder = False
+        self.mesg_begin = re.compile('^From((\s(\"|.+).+\@)|(\s(\".+\")\s))')
 
     def _gather_mboxes(self):
         for root, dirs, files in os.walk(self.root, topdown=True):
@@ -93,14 +94,14 @@ class DirectoryWalker:
         with open(path, 'rb') as fh:
             # Open the mbox found at path
             while True:
-                line = fh.readline()
+                line = CommonMethods.sanitize(fh.readline())
                 if len(line) == 0:
                     # Clunky ass way to find end of file, but whatevs. write the final message and clear
                     # buffer.
                     self._transform_buffer(buff, path)
                     buff = []
                     break
-                if re.search(b'^From ', line):
+                if re.search(self.mesg_begin, line):
                     # Per RFC 
                     if b_mark is None:
                         # Found the beginning of a message
@@ -116,11 +117,10 @@ class DirectoryWalker:
                             self.chunks = 0
                         self._transform_buffer(buff, path)
                         buff = []
-                san_line = CommonMethods.sanitize(line)
-                buff.append(san_line)
+                buff.append(line)
 
     def _transform_buffer(self, buff, path):
-        mes = email.message_from_bytes(b''.join(buff))  # type: Message
+        mes = email.message_from_string(''.join(buff))  # type: Message
         self.logger.info("Processing Message-ID {}".format(mes.get("Message-ID")))
         self._process_message(mes, path)
         self.total_messages_processed += 1
