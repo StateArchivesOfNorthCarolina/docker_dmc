@@ -8,6 +8,7 @@ from email.message import Message
 from eaxs.MultiBodyType import MultiBody
 from eaxs.SingleBodyType import SingleBody
 import logging
+from eaxs.eaxs_helpers.PayloadProcessor import PayloadProcessor as payprocess
 
 
 class MessageProcessor:
@@ -25,30 +26,11 @@ class MessageProcessor:
         self.logger = logging.getLogger("MessageProcessor")
 
     def process_payloads(self):
+        pp = payprocess(self.payloads)
         multi_body = MultiBody(self.message)
         multi_body.process_headers()
-        if isinstance(self.payloads, list):
-            for payload in self.payloads:
-                '''
-                :type payload : Message
-                '''
-                try:
-                    if payload.is_multipart():
-                        self.logger.info("{} is a multipart message".format(self.message.get("Message-ID")))
-                    else:
-                        single_body = SingleBody(payload)
-                        single_body.process_headers()
-                        single_body.process_body()
-                        single_body.payload = None
-                        self.single_bodies.append(single_body)
-                except AttributeError as e:
-                    self.logger.error("{} {}".format(self.message.get("Message-ID"), e))
-        else:
-            single_body = SingleBody(self.payloads)
-            single_body.process_headers()
-            single_body.process_body()
-            single_body.payload = None
-            self.single_bodies.append(single_body)
+        for sb in pp.single_bodies:
+            self.single_bodies.append(sb)
         multi_body.single_bodies = self.single_bodies
         multi_body.payload = None
         return multi_body

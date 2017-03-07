@@ -18,7 +18,6 @@ from lxml.ElementInclude import etree
 from collections import OrderedDict
 import logging
 import re
-import bleach
 from bs4 import BeautifulSoup as bsoup
 
 
@@ -27,34 +26,37 @@ class SingleBody:
 
     """
     
-    def __init__(self, payload):
+    def __init__(self, payload=None):
         """Constructor for SingleBody
         :type payload : Message
         """
+        if payload is None:
+            return
         self.payload = payload
-        self.content_type = None  # type: str
-        self.charset = None  # type: str
+        self.content_type = self.payload.get_content_type()  # type: str
+        self.charset = self.payload.get_content_charset()  # type: str
         self.content_name = None  # type: str
         self.content_type_comments = None  # type: str
-        self.content_type_param = None  # type: list[Parameter]
-        self.transfer_encoding = None  # type: str
+        self.content_type_param = []  # type: list[Parameter]
+        self.transfer_encoding = self.payload.get("Content-Transfer-Encoding")  # type: str
         self.transfer_encoding_comments = None  # type: str
-        self.content_id = None  # type: str
+        self.content_id = self.payload.get("Content-ID")  # type: str
         self.content_id_comments = None  # type: str
         self.description = None  # type: str
         self.description_comments = None  # type: str
-        self.disposition = None  # type: str
+        self.disposition = self.payload.get_content_disposition()  # type: str
         self.disposition_file_name = None  # type: str
         self.disposition_comments = None  # type: str
-        self.disposition_params = None  # type: list[Parameter]
-        self.other_mime_header = None  # type: list[Header]
-        self.body_content = None  # type: IntBodyContent
+        self.disposition_params = []  # type: list[Parameter]
+        self.other_mime_header = []  # type: list[Header]
+        self.body_content = []  # type: IntBodyContent
         self.ext_body_content = []  # type: list[ExtBodyContent]
         self.child_message = None  # type: ChildMessage
         self.phantom_body = None  # type: str
         self.append_body = True
         self.logger = logging.getLogger("SingleBodyType")
         self.body_only = False
+        self.soupify = False
 
     def process_headers(self):
         if isinstance(self.payload, str):
@@ -63,6 +65,7 @@ class SingleBody:
             return
 
         for header, value in self.payload.items():
+
             if header == "Content-Type":
                 expression = CommonMethods.get_content_type(value)
                 if len(expression) > 1:
@@ -89,8 +92,17 @@ class SingleBody:
                         self.disposition_file_name = unquote(fn)
                     continue
                 except IndexError as e:
-                    self.logger.error("{}: {}".format(e, value))
-            self.logger.info('Not Captured {} : {}'.format(header, value))
+                    self.other_mime_header.append(Header(header, value))
+
+            if header == "Content-ID":
+                self.content_id = CommonMethods.cdata_wrap(value)
+                continue
+
+            if header == "Content-Description":
+                self.content_name = value
+                continue
+
+            self.other_mime_header.append(Header(header, value))
 
     def process_body(self):
         if not self._is_readable():
@@ -147,6 +159,10 @@ class SingleBody:
        pass
 
     def _is_readable(self):
+        if self.content_type == "text/plain":
+            return True
+        if self.content_type == "text/html":
+            return True
         if self.body_only:
             return True
         if self.charset is None:
@@ -160,6 +176,8 @@ class SingleBody:
         return False
 
     def _soupify(self, body):
+        if not self.soupify:
+            return body
         soup = bsoup(body, "lxml")
         for script in soup(["script", "style"]):
             script.extract()

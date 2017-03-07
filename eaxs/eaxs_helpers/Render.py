@@ -9,7 +9,6 @@ from xml.etree.ElementTree import SubElement
 from xml.etree.ElementTree import tostring
 from xml.dom import minidom
 import xml.parsers.expat
-import base64
 
 
 class Render:

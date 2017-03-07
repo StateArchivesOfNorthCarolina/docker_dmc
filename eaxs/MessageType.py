@@ -8,6 +8,7 @@
 from email.message import Message
 import email
 
+
 import eaxs.eaxs_helpers.Restrictors as restrict
 from eaxs.HashType import Hash
 from eaxs.HeaderType import Header
@@ -15,7 +16,7 @@ from eaxs.IncompleteParseType import IncompleteParse
 from eaxs.MultiBodyType import MultiBody
 from eaxs.SingleBodyType import SingleBody
 from xml_help.CommonMethods import CommonMethods
-from eaxs.eaxs_helpers import MessageProcessor
+from eaxs.eaxs_helpers.MessageProcessor import MessageProcessor as MPros
 
 from lxml.ElementInclude import etree
 import logging
@@ -28,26 +29,45 @@ class DmMessage:
         """Constructor for Message"""
         self.logger = logging.getLogger("MessageType")
         self.message = message  # type: Message
+
+        # First parts of the schema message-type
         self.relative_path = rel_path  # type: str
         self.local_id = local_id
-        self.message_id = ""  # type: str
-        if self.message.get("Message-ID") is not None:
-            self.message_id = CommonMethods.cdata_wrap(self.message.get("Message-ID"))  # type: str
-        self.m_from = self.message.get("From")  # type: str
-        self.m_to = self.message.get("To")  # type: str
-        self.mime_version = self.message.get("MIME-Version")  # type: str
-        self.subject = self.message.get("Subject")  # type: str
-        self.reference = []  # type: []
+        self.message_id = CommonMethods.cdata_wrap(self.message.get("Message-ID"))  # type: str
+        self.mime_version = CommonMethods.cdata_wrap(self.message.get("MIME-Version"))  # type: str
+
+        # xm:message-headers
+        self.orig_date = CommonMethods.cdata_wrap(self.message.get("Date")) # type: datetime
+        self.m_from = CommonMethods.cdata_wrap(self.message.get("From"))  # type: str
+        self.sender = CommonMethods.cdata_wrap(self.message.get("Sender"))  # type: str
+        try:
+            self.m_to = CommonMethods.cdata_wrap(self.message.get("To"))  # type: str
+        except TypeError as te:
+            self.logger.error("{}".format(te))
+        self.cc = CommonMethods.cdata_wrap(self.message.get("Cc"))  # type: str
+        self.bcc = CommonMethods.cdata_wrap(self.message.get("Bcc"))  # type: str
+        self.in_reply_to = CommonMethods.cdata_wrap(self.message.get("In-Reply-To"))
+        self.references = CommonMethods.cdata_wrap(self.message.get("References"))  # type: str
+        self.comments = CommonMethods.cdata_wrap(self.message.get("Comments"))  # type: str
+        self.keywords = CommonMethods.cdata_wrap(self.message.get("Keywords"))  # type: str
+        try:
+            self.subject = CommonMethods.cdata_wrap(self.message.get("Subject"))  # type: str
+        except TypeError as te:
+            self.logger.error("{}".format(te))
+        self.status_flag = CommonMethods.cdata_wrap(self.message.get("Status"))  # type: str
+
         self.headers = []  # type: list[Header]
-        self.status_flag = self.message.get("Status")  # type: str
         self.single_body = []  # type: list[SingleBody]
         self.multiple_body = []  # type: list[MultiBody]
         self.incomplete = None  # type: IncompleteParse
         try:
             self.eol = CommonMethods.get_eol(self.message.as_string())  # type: str
-        except:
-            self.eol = restrict.LF
-
+        except KeyError as e:
+            self.logger.error("Inspect Message: KeyError {}".format(self.message.get("Message-ID")))
+        except UnicodeEncodeError as ue:
+            self.logger.error("Inspect Message: UnicodeEncodeError {}".format(self.message.get("Message-ID")))
+        except LookupError as le:
+            self.logger.error("Inspect Message: LookupError {}".format(self.message.get("Message-ID")))
         self.hash = CommonMethods.get_hash(self.message.as_bytes())  # type: Hash
 
         self._process_headers()
@@ -61,7 +81,12 @@ class DmMessage:
             self.headers.append(h)
 
     def _process_payload(self):
-        message_processor = MessageProcessor.MessageProcessor(self.message, self.relative_path)
+        if isinstance(self.message.get_payload(), str):
+            sb = SingleBody()
+            sb.body_content = self.message.get_payload()
+            self.single_body.append(sb)
+            return
+        message_processor = MPros(self.message, self.relative_path)
         self.multiple_body = message_processor.process_payloads()
 
     def render(self, parent=None):

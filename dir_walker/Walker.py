@@ -11,6 +11,10 @@ import mailbox
 from eaxs.Account import Account
 from eaxs.FolderType import Folder
 import logging
+import re
+import email
+from email.parser import Parser
+from email.message import Message
 
 
 class DirectoryWalker:
@@ -46,35 +50,17 @@ class DirectoryWalker:
                     continue
                 self.mboxes.append(nf)
 
-    def _do_walk_with_mboxes_inv(self):
-        self.start_account()
-        for path in self.mboxes:
-            self.current_relpath = self.get_rel_path(path)
-            self.logger.info('Processing folder found at: {}'.format(path))
-            self.new_folder = False
-            self.mbx = None
-            while not self.new_folder:
-                while self.process_mbox(path):
-                    # This means the mbox, or Folder, has more messages than the chunksize
-                    # Render a folder and then close and reopen account
-                    self._fldr_render_reopen(path)
-            self._fldr_render_continue(path)
-        self.close_account()
-
     def _fldr_render_reopen(self, path):
-        fldr = Folder(self.current_relpath, path)
-        fldr.messages = self.messages
-        fldr.render()
-        self.logger.info('Wrote folder of size {} bytes'.format(fldr.mbox_size))
-        self.logger.info('Messages processed: {}'.format(self.total_messages_processed))
-        fldr = None
-        self.messages = []
+        self._fldr_render(path)
         self.close_account()
         self.start_account()
         self.chunks = 0
         self.tracking_pos = 0
 
     def _fldr_render_continue(self, path):
+        self._fldr_render(path)
+
+    def _fldr_render(self, path):
         fldr = Folder(self.current_relpath, path)
         fldr.messages = self.messages
         fldr.render()
@@ -84,64 +70,65 @@ class DirectoryWalker:
         self.messages = []
 
     def do_walk(self):
-        self._do_walk_with_mboxes_inv()
-        for root, dirs, files in os.walk(self.root, topdown=False):
-            if len(files) == 0:
-                continue
-            mbx_path = os.path.join(root, files[0])
-            if len(files) > 1 or os.path.getsize(mbx_path) == 0:
-                # TODO: Handle this in a rational way.
-                pass
-            else:
-                self.current_relpath = self.get_rel_path(mbx_path)
-                self.logger.info('Processing folder found at: {}'.format(mbx_path))
+        self.start_account()
+        for path in self.mboxes:
+            self.current_relpath = self.get_rel_path(path)
+            self.logger.info('Processing folder found at: {}'.format(path))
+            self.new_folder = False
+            self.mbx = None
+            self.message_generator(path)
+            self._fldr_render_continue(path)
+        self.close_account()
 
-                if self.total_messages_processed == 0:
-                    self.start_account()
-                if self.chunks > CommonMethods.get_chunksize() != 0:
-                    # Close old account
-                    self.close_account()
-                    self.start_account()
-                    self.chunks = 0
+    def message_generator(self, path):
+        """
+        This is the main method that extracts email messages from an mbox.
+        :type path: str
+        :param path:
+        :return:
+        """
+        b_mark = None
+        buff = []
 
-                while self.process_mbox(mbx_path):
-                    # This means the mbox, or Folder, has more messages than the chunksize
-                    pass
+        with open(path, 'rb') as fh:
+            # Open the mbox found at path
+            while True:
+                line = fh.readline()
+                if len(line) == 0:
+                    # Clunky ass way to find end of file, but whatevs.
+                    self._transform_buffer(buff, path)
+                    buff = []
+                    break
+                if re.search(b'^From ', line):
+                    # Per RFC 
+                    if b_mark is None:
+                        # Found the beginning of a message
+                        # set the beginning bit, and put everything else, until the next 'From ' block,
+                        # into a buffer.
+                        b_mark = 1
+                    else:
+                        # Process the buffered message into an email.message.Message object
+                        b_mark = None
+                        if CommonMethods.get_chunksize() != 0 and CommonMethods.get_chunksize() == self.chunks:
+                            # Render the folder and reopen
+                            self._fldr_render_reopen(path)
+                            self.chunks = 0
+                        self._transform_buffer(buff, path)
+                        buff = []
+                san_line = CommonMethods.sanitize(line)
+                buff.append(san_line)
 
-                fldr = Folder(self.current_relpath, mbx_path)
-                fldr.messages = self.messages
-                fldr.render()
-                self.logger.info('Wrote folder of size {} bytes'.format(fldr.mbox_size))
-                self.logger.info('Messages processed: {}'.format(self.total_messages_processed))
-                fldr = None
-                self.messages = []
-        self.account.close_account()
-        self.logger.info('Total messages processed: {}'.format(self.total_messages_processed))
+    def _transform_buffer(self, buff, path):
+        mes = email.message_from_bytes(b''.join(buff))  # type: Message
+        self.logger.info("Processing Message-ID {}".format(mes.get("Message-ID")))
+        self._process_message(mes, path)
+        self.total_messages_processed += 1
+        self.chunks += 1
 
-    def process_mbox(self, path):
-        if self.mbx is None:
-            self.mbx = mailbox.mbox(path)
-        self.messages = []
-        try:
-            for message in self.mbx:
-                if self.tracking_pos < self.total_messages_processed:
-                    self.tracking_pos += 1
-                    continue
-                self.total_messages_processed += 1
-                self.chunks += 1
-                self.tracking_pos += 1
-                e_msg = DmMessage(self.get_rel_path(path), CommonMethods.increment_local_id(), message)
-                e_msg.message = None
-                self.messages.append(e_msg)
-                if self.chunks == CommonMethods.get_chunksize() != 0:
-                    # Chunks exceeded within the current folder return without setting that flag
-                    # Reset the tracking position.
-                    return True
-            self.new_folder = True
-            self.tracking_pos = self.total_messages_processed
-            return False
-        except MemoryError as er:
-            self.logger.error("Memory Error {}".format(er))
+    def _process_message(self, mes, path):
+        e_msg = DmMessage(self.get_rel_path(path), CommonMethods.increment_local_id(), mes)
+        e_msg.message = None
+        self.messages.append(e_msg)
 
     def get_rel_path(self, path):
         if self.root == path:
