@@ -95,7 +95,8 @@ class DirectoryWalker:
             while True:
                 line = fh.readline()
                 if len(line) == 0:
-                    # Clunky ass way to find end of file, but whatevs.
+                    # Clunky ass way to find end of file, but whatevs. write the final message and clear
+                    # buffer.
                     self._transform_buffer(buff, path)
                     buff = []
                     break
