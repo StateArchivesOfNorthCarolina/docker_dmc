@@ -4,6 +4,7 @@
 #
 # Description: Implementation of the int-body-content-type
 ##############################################################
+from lxml.ElementInclude import etree
 
 
 class IntBodyContent:
@@ -14,3 +15,17 @@ class IntBodyContent:
         self.content = None  # type: str
         self.char_set = None  # type: str
         self.transfer_encoding = None  # type: str
+
+    def render(self, parent):
+        """
+        :type parent: xml.etree.ElementTree.Element
+        :param parent:
+        :return:
+        """
+        int_bdy_head = etree.SubElement(parent, "IntBodyContent")
+        child1 = etree.SubElement(int_bdy_head, "Content")
+        child1.text = self.content
+        child2 = etree.SubElement(int_bdy_head, "CharSet")
+        child2.text = self.char_set
+        child3 = etree.SubElement(int_bdy_head, "TransferEncoding")
+        child3.text = self.transfer_encoding

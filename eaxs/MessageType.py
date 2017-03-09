@@ -81,13 +81,9 @@ class DmMessage:
             self.headers.append(h)
 
     def _process_payload(self):
-        if isinstance(self.message.get_payload(), str):
-            sb = SingleBody()
-            sb.body_content = self.message.get_payload()
-            self.single_body.append(sb)
-            return
         message_processor = MPros(self.message, self.relative_path)
         self.multiple_body = message_processor.process_payloads()
+
 
     def render(self, parent=None):
         """

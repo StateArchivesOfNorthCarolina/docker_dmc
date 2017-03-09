@@ -30,21 +30,28 @@ class SingleBody:
         """Constructor for SingleBody
         :type payload : Message
         """
-        if payload is None:
-            return
-        self.payload = payload
-        self.content_type = self.payload.get_content_type()  # type: str
-        self.charset = self.payload.get_content_charset()  # type: str
+        if payload is not None:
+            self.payload = payload
+            self.content_type = self.payload.get_content_type()  # type: str
+            self.charset = self.payload.get_content_charset()  # type: str
+            self.transfer_encoding = self.payload.get("Content-Transfer-Encoding")  # type: str
+            self.content_id = self.payload.get("Content-ID")  # type: str
+            self.disposition = self.payload.get_content_disposition()  # type: str
+        else:
+            self.payload = payload
+            self.content_type = None  # type: str
+            self.charset = None  # type: str
+            self.transfer_encoding = None # type: str
+            self.content_id = None  # type: str
+            self.disposition = None  # type: str
+
         self.content_name = None  # type: str
         self.content_type_comments = None  # type: str
         self.content_type_param = []  # type: list[Parameter]
-        self.transfer_encoding = self.payload.get("Content-Transfer-Encoding")  # type: str
         self.transfer_encoding_comments = None  # type: str
-        self.content_id = self.payload.get("Content-ID")  # type: str
         self.content_id_comments = None  # type: str
         self.description = None  # type: str
         self.description_comments = None  # type: str
-        self.disposition = self.payload.get_content_disposition()  # type: str
         self.disposition_file_name = None  # type: str
         self.disposition_comments = None  # type: str
         self.disposition_params = []  # type: list[Parameter]
@@ -201,7 +208,6 @@ class SingleBody:
                             ebc.render(single_child_head)
                         continue
                     continue
-
                 child = etree.SubElement(single_child_head, value)
                 try:
                     child.text = self.__getattribute__(key)

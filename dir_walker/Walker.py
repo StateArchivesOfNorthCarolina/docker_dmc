@@ -94,14 +94,15 @@ class DirectoryWalker:
         with open(path, 'rb') as fh:
             # Open the mbox found at path
             while True:
-                line = CommonMethods.sanitize(fh.readline())
+                #line = CommonMethods.sanitize(fh.readline())
+                line = fh.readline()
                 if len(line) == 0:
                     # Clunky ass way to find end of file, but whatevs. write the final message and clear
                     # buffer.
                     self._transform_buffer(buff, path)
                     buff = []
                     break
-                if re.search(self.mesg_begin, line):
+                if re.search(b'^From((\s(\"|.+).+\@)|(\s(\".+\")\s))', line):
                     # Per RFC 
                     if b_mark is None:
                         # Found the beginning of a message
@@ -120,7 +121,7 @@ class DirectoryWalker:
                 buff.append(line)
 
     def _transform_buffer(self, buff, path):
-        mes = email.message_from_string(''.join(buff))  # type: Message
+        mes = email.message_from_bytes(b''.join(buff))  # type: Message
         self.logger.info("Processing Message-ID {}".format(mes.get("Message-ID")))
         self._process_message(mes, path)
         self.total_messages_processed += 1

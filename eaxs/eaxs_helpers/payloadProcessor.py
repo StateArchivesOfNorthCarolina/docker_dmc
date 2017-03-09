@@ -33,6 +33,11 @@ class PayloadProcessor:
                     self.single_bodies.append(sb)
         else:
             # This is a single body that was uncaught.
-            sb = SB(payloads)
+            # Check to see if its a body only with no metadata
+            if isinstance(payloads, str):
+                # Yes it is instantiate SingleBody without Payload
+                sb = SB()
+            else:
+                sb = SB(payloads)
             sb.body_content = payloads
             self.single_bodies.append(sb)
