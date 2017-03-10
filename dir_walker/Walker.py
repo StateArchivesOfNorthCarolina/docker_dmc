@@ -94,8 +94,8 @@ class DirectoryWalker:
         with open(path, 'rb') as fh:
             # Open the mbox found at path
             while True:
-                #line = CommonMethods.sanitize(fh.readline())
-                line = fh.readline()
+                line = CommonMethods.sanitize(fh.readline())
+                #line = fh.readline()
                 if len(line) == 0:
                     # Clunky ass way to find end of file, but whatevs. write the final message and clear
                     # buffer.

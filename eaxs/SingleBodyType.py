@@ -56,7 +56,7 @@ class SingleBody:
         self.disposition_comments = None  # type: str
         self.disposition_params = []  # type: list[Parameter]
         self.other_mime_header = []  # type: list[Header]
-        self.body_content = []  # type: IntBodyContent
+        self.body_content = []  # type: list[IntBodyContent]
         self.ext_body_content = []  # type: list[ExtBodyContent]
         self.child_message = None  # type: ChildMessage
         self.phantom_body = None  # type: str
@@ -64,6 +64,7 @@ class SingleBody:
         self.logger = logging.getLogger("SingleBodyType")
         self.body_only = False
         self.soupify = False
+        self.body_content_duplicate = False
 
     def process_headers(self):
         if isinstance(self.payload, str):
@@ -113,27 +114,62 @@ class SingleBody:
 
     def process_body(self):
         if not self._is_readable():
-            if self._store_body():
-                extbody = ExtBodyContent()
-                extbody.char_set = self.charset
-                extbody.local_id = CommonMethods.increment_local_id()
-                extbody.transfer_encoding = self.transfer_encoding
-                extbody.eol = CommonMethods.get_eol(self.payload.get_payload())
-                extbody.hash = CommonMethods.get_hash(self.payload.as_bytes())
-                extbody.body_content = self.payload.get_payload()
-                children = OrderedDict({
-                            "ContentType": self.content_type,
-                            "Disposition": self.disposition,
-                            "DispositionFileName": self.disposition_file_name,
-                            "ContentTransferEncoding": self.transfer_encoding
-                })
-                extbody.build_xml_file(children)
-                self.ext_body_content.append(extbody)
-                self.payload = None
+            # Content-type indicates this message not readable
+            # Next check to see if we should store the body externally or discard because of
+            # Duplication
+
+            if not self._store_body():
+                return
+            if self.payload is not None:
+                self._full_ext_body()
+            else:
+                self._simple_ext_body()
         else:
             # This is a plaintext BodyContent block
             # Strip HTML from the block and escape with cdata if necessary
-            self._process_plaintext_body()
+            if self.body_only is False:
+                self._process_plaintext_body()
+            else:
+                try:
+                    self.body_content.append(IntBodyContent(CommonMethods.cdata_wrap(self.body_content),
+                                                            self.transfer_encoding, self.charset))
+                except AttributeError as e:
+                    # This message is completely empty
+                    self.body_content = []
+
+    def _full_ext_body(self):
+        extbody = ExtBodyContent()
+        extbody.char_set = self.charset
+        extbody.local_id = CommonMethods.increment_local_id()
+        extbody.transfer_encoding = self.transfer_encoding
+        extbody.eol = CommonMethods.get_eol(self.payload.get_payload())
+        extbody.hash = CommonMethods.get_hash(self.payload.as_bytes())
+        extbody.body_content = self.payload.get_payload()
+        children = OrderedDict({
+            "ContentType": self.content_type,
+            "Disposition": self.disposition,
+            "DispositionFileName": self.disposition_file_name,
+            "ContentTransferEncoding": self.transfer_encoding
+        })
+        extbody.build_xml_file(children)
+        self.ext_body_content.append(extbody)
+        self.payload = None
+
+    def _simple_ext_body(self):
+        extbody = ExtBodyContent()
+        extbody.local_id = CommonMethods.increment_local_id()
+        extbody.transfer_encoding = self.transfer_encoding
+        extbody.hash = CommonMethods.get_hash(bytes(self.body_content, encoding='utf-8'))
+        children = OrderedDict({
+            "ContentType": self.content_type,
+            "Disposition": self.disposition,
+            "DispositionFileName": self.disposition_file_name,
+            "ContentTransferEncoding": self.transfer_encoding
+        })
+        extbody.build_xml_file(children)
+        self.ext_body_content.append(extbody)
+        self.payload = None
+        self.body_content = None
 
     def _process_plaintext_body(self):
         t = ""
@@ -145,7 +181,7 @@ class SingleBody:
             t = re.sub("]]", "\]\]", t)
 
         try:
-            self.body_content = CommonMethods.cdata_wrap(t)
+            self.body_content.append(IntBodyContent(CommonMethods.cdata_wrap(t), self.transfer_encoding, self.charset))
         except ValueError as ve:
             self.logger.error("{}".format(ve))
         self.payload = None
@@ -158,6 +194,7 @@ class SingleBody:
         if self.content_type.__contains__("richtext"):
             return True
         elif not CommonMethods.store_rtf_body():
+            # Check to see if we have flagged to save body duplicates
             self.disposition_comments = "Attachment is duplicate of BodyContent: Not saved"
             return False
         return True
@@ -166,20 +203,24 @@ class SingleBody:
        pass
 
     def _is_readable(self):
+        if self.transfer_encoding == "base64":
+            return False
         if self.content_type == "text/plain":
             return True
         if self.content_type == "text/html":
+            return True
+        if self.charset is not None:
+            cs = Charset(self.charset)
+        else:
+            cs = Charset()
+        if self.charset == "us-ascii":
+            return True
+        if cs.get_body_encoding() == "quoted-printable":
             return True
         if self.body_only:
             return True
         if self.charset is None:
             return False
-
-        cs = Charset(self.charset)
-        if self.charset == "us-ascii":
-            return True
-        if cs.get_body_encoding() == "quoted-printable":
-            return True
         return False
 
     def _soupify(self, body):
@@ -206,6 +247,10 @@ class SingleBody:
                     if isinstance(self.__getattribute__(key)[0], ExtBodyContent):
                         for ebc in self.ext_body_content:
                             ebc.render(single_child_head)
+                        continue
+                    if isinstance(self.__getattribute__(key)[0], IntBodyContent):
+                        for intb in self.body_content:
+                            intb.render(single_child_head)
                         continue
                     continue
                 child = etree.SubElement(single_child_head, value)

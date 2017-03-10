@@ -16,7 +16,7 @@ class PayloadProcessor:
         """Constructor for PayloadProcessor
         :type payload : Message
         """
-        self.single_bodies = []
+        self.single_bodies = []  # type: list[SB]
         self._inspect(payload)
 
     def _inspect(self, payloads):
@@ -37,6 +37,7 @@ class PayloadProcessor:
             if isinstance(payloads, str):
                 # Yes it is instantiate SingleBody without Payload
                 sb = SB()
+                sb.body_only = True
             else:
                 sb = SB(payloads)
             sb.body_content = payloads

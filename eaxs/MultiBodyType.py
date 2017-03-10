@@ -74,3 +74,8 @@ class MultiBody:
                     continue
                 child = etree.SubElement(multi_child_head, value)
                 child.text = self.__getattribute__(key)
+                continue
+            if key == 'charset' or key == 'boundary_string':
+                # This is stupid but is required by the schema
+                child = etree.SubElement(multi_child_head, value)
+                child.text = self.__getattribute__(key)
