@@ -34,7 +34,7 @@ _<OrigDate>2009-08-03T15:35:00Z</OrigDate>_
 Such a normalization is, I think, a bad idea.
 
 
-*I believe the <OrigDate> should be a simple string value.* This most
+*I believe the OrigDate should be a simple string value.* This most
 accurately represents the original nature of the mbox.
 
 I realize this is a bad place for discussions of archival best practice,
