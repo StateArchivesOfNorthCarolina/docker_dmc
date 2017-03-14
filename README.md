@@ -26,7 +26,13 @@ dateTime range. It must be between +1400 and -1400.
 
 We could normalize the dateTime object, but then we would have 
 significantly altered the original field's value. The canonical way to
-do this is to remove 21 hours from the 
+do this is to remove 21 hours from the Date Time.  So then, the representation
+of the originally transmitted Date and Time becomes:
+
+_<OrigDate>2009-08-03T15:35:00Z</OrigDate>_
+
+Such a normalization is, I think, a bad idea.
+
 
 *I believe the <OrigDate> should be a simple string value.* This most
 accurately represents the original nature of the mbox.
