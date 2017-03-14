@@ -41,6 +41,8 @@ class DmMessage:
         self.relative_path = rel_path  # type: str
         self.local_id = local_id
         self.message_id = CommonMethods.cdata_wrap(self.message.get("Message-ID"))  # type: str
+        if self.message_id == '' or self.message_id is None:
+            self.message_id = 'No Message-ID supplied'
         self.mime_version = CommonMethods.cdata_wrap(self.message.get("MIME-Version"))  # type: str
         self.incomplete = []  # type: list[IncompleteParse]
 
