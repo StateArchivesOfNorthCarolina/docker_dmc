@@ -48,3 +48,5 @@ but shouldn't we be free to talk shop is all sorts of different places?
 ## Usage
 DarcMailCLI.py -a [Name of Account] -d [Path to the MBOX structure] 
                 -c [integer] Number of messages per file.
+
+DarcMailCLI.py -a 'GovernorPerdue' -d 'C:\\Repository\\Perdue\\' -c 10000
