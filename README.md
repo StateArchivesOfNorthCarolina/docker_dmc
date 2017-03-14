@@ -4,9 +4,9 @@ CmdDarcMailXml.  My goal with this refactor is to modularize the
 tool, and add some functionality.
 
 As of this version DarcMailCLI produces valid EAXS xml in a single 
-file or multiple chunked files, if the attachments are stored externally
-(I have not test internal storage of attachments, because why?), with 
-one exception.
+file or multiple chunked files if the attachments are stored externally
+(I have not tested the internal storage of attachments in the main xml file, 
+because why?), with one exception.
 
 The published schema requires that the OrigDate header be encoded as an 
 XML dateTime.  While this is not impossible, there are significant 
