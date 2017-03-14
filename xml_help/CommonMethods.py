@@ -5,7 +5,10 @@ from eaxs.HashType import Hash
 from lxml.ElementInclude import etree
 from collections import OrderedDict
 import logging
-import base64
+import unicodedata
+from datetime import datetime
+import string
+
 
 global __LOCALID__
 global __ROOTPATH__
@@ -13,6 +16,11 @@ global __RELPATH__
 
 __LOCALID__= 0  # type: int
 logger = logging.getLogger("CommonMethods")
+
+printable = frozenset({'Lu', 'Ll', 'Lt', 'Lm', 'Lo', 'Mn', 'Mc', 'Me',
+                       'Nd', 'Nl', 'No', 'Pc', 'Pd', 'Ps', 'Pe', 'Pi',
+                       'Pf', 'Po', 'Sm', 'Sc', 'Sk', 'So', 'Zs', 'Zl',
+                       'Zp', 'Cc', 'Cf', 'Cs', 'Co', 'Cn'})
 
 
 class CommonMethods:
@@ -36,11 +44,23 @@ class CommonMethods:
             ("local_id", "LocalId"),
             ("message_id", "MessageId"),
             ("mime_version", "MimeVersion"),
+            ("orig_date", "OrigDate"),
+            ("m_from", "From"),
+            ("sender", "Sender"),
+            ("m_to", "To"),
+            ("cc", "Cc"),
+            ("bcc", "Bcc"),
+            ("in_reply_to", "InReplyTo"),
+            ("references", "References"),
+            ("subject", "Subject"),
+            ("comments", "Comments"),
+            ("keywords", "Keywords"),
             ("headers", "Header"),
             ("status_flag", "StatusFlag"),
             ("single_body", "SingleBody"),
             ("multiple_body", "MultiBody"),
             ("incomplete", "Incomplete"),
+            ("eol", "Eol"),
             ("hash", "Hash")])
 
     @staticmethod
@@ -96,6 +116,9 @@ class CommonMethods:
 
     @staticmethod
     def cdata_wrap(text):
+        if text is None:
+            return None
+
         try:
             if re.search("[<>\'\"]", text) is not None:
                 return etree.CDATA(text)
@@ -107,6 +130,15 @@ class CommonMethods:
             raise
 
     @staticmethod
+    def sanitize(text):
+        '''
+        :type text: bytes
+        :param text:
+        :return:
+        '''
+        return text.decode('ascii', 'ignore').encode('utf-8')
+
+    @staticmethod
     def get_content_type(content_type):
         '''
         :param content_type:
@@ -116,9 +148,12 @@ class CommonMethods:
 
         if re.search(';', content_type) is not None:
             # has a secondary component
-            mime = content_type.split(";")[0]
-            key, value = content_type.split(";")[1].split("=")
-            return [mime, key.strip(), value.strip("\"")]
+            try:
+                mime = content_type.split(";")
+                key, value = re.split("=", mime[1], maxsplit=1)
+            except ValueError as ve:
+                raise
+            return [mime[0], key.strip(), value.strip("\"")]
         else:
             # is only a mime type
             return [content_type]

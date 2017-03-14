@@ -38,7 +38,10 @@ class Folder:
                 """
                 :type mes: DmMessage
                 """
-                mes.render(folder)
+                try:
+                    mes.render(folder)
+                except AttributeError as e:
+                    print()
         outfile = open(CommonMethods.get_eaxs_filename(), "ab")
         etree.ElementTree(folder).write(outfile, encoding="utf-8", pretty_print=True)
         folder = None

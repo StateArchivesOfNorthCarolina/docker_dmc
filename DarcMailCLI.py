@@ -16,6 +16,7 @@ import logging.config
 import yaml
 from dir_walker import Walker
 from xml_help.CommonMethods import CommonMethods
+from timeit import default_timer as timer
 
 
 class DarcMailCLI(object):
@@ -86,13 +87,6 @@ class DarcMailCLI(object):
         parser.add_argument('--directory', '-d', dest='account_directory', required=True,
                             help='directory to hold all files for this account')
 
-        parser.add_argument('--folder', '-f', dest='folder_name',
-                            help='folder name (generate XML only for this one folder)')
-
-        parser.add_argument('--max_internal', '-m', dest='max_internal',
-                            type=int, default=self.NO_LIMIT,
-                            help='maximum size in bytes for an internally-stored attachment, default = no limit')
-
         parser.add_argument('--chunk', '-c', dest='chunk', type=int,
                             default=self.NO_CHUNK,
                             help='An approximate number of messages to put in one output XML file. '
@@ -153,9 +147,6 @@ class DarcMailCLI(object):
             CommonMethods.set_attachment_dir(self.data_dir)
             CommonMethods.set_xml_dir(self.xml_dir)
 
-        if argdict['folder_name']:
-            self.folder_name = argdict['folder_name'].strip()
-
         if 'chunk' in argdict.keys():
             self.chunksize = argdict['chunk']
             CommonMethods.set_chunk_size(self.chunksize)
@@ -174,6 +165,7 @@ class DarcMailCLI(object):
         :return:
         '''
         wlk = Walker.DirectoryWalker(self.account_directory, self.xml_dir, self.account_name)
+        wlk._gather_mboxes()
         wlk.do_walk()
 
 
@@ -308,7 +300,9 @@ class ValidateStructure(object):
 if __name__ == "__main__":
     dmcli = DarcMailCLI()
     if dmcli.validate():
-        print("Valid")
+        start = timer()
         dmcli.convert()
+        end = timer()
+        print(end-start)
     else:
         print("Invalid Folder Structure")

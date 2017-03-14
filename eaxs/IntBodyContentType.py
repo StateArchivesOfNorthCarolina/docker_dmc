@@ -4,13 +4,28 @@
 #
 # Description: Implementation of the int-body-content-type
 ##############################################################
+from lxml.ElementInclude import etree
 
 
 class IntBodyContent:
     """"""
 
-    def __init__(self, content=None, char_set=None, transfer_encoding=None):
+    def __init__(self, content=None, transfer_encoding=None, char_set='utf-8'):
         """Constructor for """
-        self.content = None  # type: str
-        self.char_set = None  # type: str
-        self.transfer_encoding = None  # type: str
+        self.content = content  # type: str
+        self.char_set = char_set  # type: str
+        self.transfer_encoding = transfer_encoding  # type: str
+
+    def render(self, parent):
+        """
+        :type parent: xml.etree.ElementTree.Element
+        :param parent:
+        :return:
+        """
+        int_bdy_head = etree.SubElement(parent, "BodyContent")
+        child1 = etree.SubElement(int_bdy_head, "Content")
+        child1.text = self.content
+        child2 = etree.SubElement(int_bdy_head, "CharSet")
+        child2.text = self.char_set
+        child3 = etree.SubElement(int_bdy_head, "TransferEncoding")
+        child3.text = self.transfer_encoding

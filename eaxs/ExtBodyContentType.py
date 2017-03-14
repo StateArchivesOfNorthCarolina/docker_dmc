@@ -80,9 +80,10 @@ class ExtBodyContent:
         child4 = etree.SubElement(ext_bdy_head, "LocalId")
         child4.text = self.local_id
         child5 = etree.SubElement(ext_bdy_head, "XMLWrapped")
-        child5.text = self.xml_wrapped
-        child6 = etree.SubElement(ext_bdy_head, "Eol")
-        child6.text = self.eol
+        child5.text = str(self.xml_wrapped).lower()
+        if self.eol is not None:
+            child6 = etree.SubElement(ext_bdy_head, "Eol")
+            child6.text = self.eol
         self.hash.render(ext_bdy_head)
 
     def _build_dedup(self, children):
@@ -95,10 +96,11 @@ class ExtBodyContent:
             chillen = OrderedDict()
             chillen["LocalUniqueID"] = self.gid.__str__()
             for k, v in children.items():
-                chillen[k] = v
+                chillen[k] = str(v).strip("\"")
             chillen["Content"] = self.body_content
             rend = Render("ExternalBodyPart", chillen)
-            self.write_ext_body(rend.render())
+            text = rend.render()
+            self.write_ext_body(text)
             self.body_content = None
         else:
             self.gid = CommonMethods.get_ext_gid(self.hash.value)

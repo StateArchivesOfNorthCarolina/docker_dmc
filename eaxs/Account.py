@@ -42,9 +42,11 @@ class Account(object):
     @staticmethod
     def get_root_element_attributes():
         return '<?xml version="1.0" encoding="UTF-8"?>\n' \
-               '<Account {}="{}" {}="{}" {}="{}">\n'.format("xmlns", "http://www.archives.ncdcr.gov/mail-account",
-                                                         "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance",
-                                                         "xsi:schemaLocation", "http://www.history.ncdcr.gov/SHRAB/ar/emailpreservation/mail-account/mail-account.xsd")
+               '<Account {}="{}" {}="{}" {}="{}">\n'.\
+            format("xmlns", "http://www.archives.ncdcr.gov/mail-account",
+                            "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance",
+                            "xsi:schemaLocation", "http://www.archives.ncdcr.gov/mail-account\n"
+                            "http://www.history.ncdcr.gov/SHRAB/ar/emailpreservation/mail-account/mail-account.xsd")
 
     def get_id(self):
         return '<GlobalId>{}</GlobalId>\n'.format(self.global_id)
@@ -54,13 +56,7 @@ class Account(object):
             self._start_account_chunks()
             return
         self.current_eaxs_file = os.path.join(self.xml_loc, self.xml_name)
-        try:
-            fh = codecs.open(self.current_eaxs_file, "ab", "utf-8")
-            fh.write(self.get_root_element_attributes())
-            fh.close()
-            CommonMethods.set_eaxs_file(self.current_eaxs_file)
-        except FileNotFoundError as e:
-            self.logger.error("{}: {}".format(e, self.current_eaxs_file))
+        self._write_file()
 
     def close_account(self):
         try:
@@ -70,9 +66,7 @@ class Account(object):
         except FileNotFoundError as e:
             self.logger.error("{}: {}".format(e, os.path.join(self.current_eaxs_file)))
 
-    def _start_account_chunks(self):
-        fn = '{}_{}_{}.xml'.format(self.xml_name, "LID", CommonMethods.get_current_local_id())
-        self.current_eaxs_file = os.path.join(self.xml_loc, fn)
+    def _write_file(self):
         try:
             fh = codecs.open(self.current_eaxs_file, "ab", "utf-8")
             fh.write(self.get_root_element_attributes())
@@ -80,3 +74,8 @@ class Account(object):
             CommonMethods.set_eaxs_file(self.current_eaxs_file)
         except FileNotFoundError as e:
             self.logger.error("{}: {}".format(e, self.current_eaxs_file))
+
+    def _start_account_chunks(self):
+        fn = '{}_{}_{}.xml'.format(self.xml_name, "LID", CommonMethods.get_current_local_id())
+        self.current_eaxs_file = os.path.join(self.xml_loc, fn)
+        self._write_file()

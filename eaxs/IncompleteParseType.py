@@ -4,6 +4,7 @@
 # 
 # Description: Implementation of the incomplete-parse-type
 ##############################################################
+from lxml.ElementInclude import etree
 
 
 class IncompleteParse:
@@ -13,4 +14,15 @@ class IncompleteParse:
         """Constructor for IncompleteParse"""
         self.error_type = error_type  # type: str
         self.error_location = error_location  # type: str
-        
+
+    def render(self, parent):
+        """
+        :type parent: xml.etree.ElementTree.Element
+        :param parent:
+        :return:
+        """
+        int_bdy_head = etree.SubElement(parent, "Incomplete")
+        child1 = etree.SubElement(int_bdy_head, "ErrorType")
+        child1.text = self.error_type
+        child2 = etree.SubElement(int_bdy_head, "ErrorLocation")
+        child2.text = self.error_location

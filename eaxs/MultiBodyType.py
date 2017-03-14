@@ -13,6 +13,7 @@ from xml_help.CommonMethods import CommonMethods
 from lxml.ElementInclude import etree
 from collections import OrderedDict
 
+
 class MultiBody:
     """"""
     
@@ -47,8 +48,11 @@ class MultiBody:
         for header, value in self.payload.items():
             if header == "Content-Type":
                 expression = CommonMethods.get_content_type(value)
-                self.content_type = expression[0]
-                self.boundary_string = expression[2]
+                if len(expression) == 3:
+                    self.content_type = expression[0]
+                    self.boundary_string = expression[2]
+                else:
+                    self.content_type = expression[0]
 
     def render(self, parent):
         """
@@ -68,5 +72,10 @@ class MultiBody:
                             item.render(multi_child_head)
                         continue
                     continue
+                child = etree.SubElement(multi_child_head, value)
+                child.text = self.__getattribute__(key)
+                continue
+            if key == 'charset' or key == 'boundary_string':
+                # This is stupid but is required by the schema
                 child = etree.SubElement(multi_child_head, value)
                 child.text = self.__getattribute__(key)
