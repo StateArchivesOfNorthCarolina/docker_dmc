@@ -16,7 +16,6 @@ from eaxs.IncompleteParseType import IncompleteParse
 from eaxs.MultiBodyType import MultiBody
 from eaxs.SingleBodyType import SingleBody
 from xml_help.CommonMethods import CommonMethods
-from xml_help.dm_common import mail_date2datetime
 from eaxs.eaxs_helpers.MessageProcessor import MessageProcessor as MPros
 
 from lxml.ElementInclude import etree
@@ -47,7 +46,8 @@ class DmMessage:
         self.incomplete = []  # type: list[IncompleteParse]
 
         # xm:message-headers
-        self.orig_date = ''.join(mail_date2datetime(self.message.get("Date"))) # type: datetime
+        xml_d = CommonMethods.tup_to_xml_date(CommonMethods.parsedate_tz(self.message.get("Date")))
+        self.orig_date = xml_d  # type: str
         self.m_from = CommonMethods.cdata_wrap(self.message.get("From"))  # type: str
         self.sender = CommonMethods.cdata_wrap(self.message.get("Sender"))  # type: str
         try:

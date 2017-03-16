@@ -23,6 +23,21 @@ printable = frozenset({'Lu', 'Ll', 'Lt', 'Lm', 'Lo', 'Mn', 'Mc', 'Me',
                        'Zp', 'Cc', 'Cf', 'Cs', 'Co', 'Cn'})
 
 
+_monthnames = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul',
+               'aug', 'sep', 'oct', 'nov', 'dec',
+               'january', 'february', 'march', 'april', 'may', 'june', 'july',
+               'august', 'september', 'october', 'november', 'december']
+_daynames = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
+
+
+_timezones = {'UT':0, 'UTC':0, 'GMT':0, 'Z':0,
+              'AST': -400, 'ADT': -300,  # Atlantic (used in Canada)
+              'EST': -500, 'EDT': -400,  # Eastern
+              'CST': -600, 'CDT': -500,  # Central
+              'MST': -700, 'MDT': -600,  # Mountain
+              'PST': -800, 'PDT': -700   # Pacific
+              }
+
 class CommonMethods:
 
     @staticmethod
@@ -251,3 +266,97 @@ class CommonMethods:
     @staticmethod
     def get_dedupe():
         return globals()["__DEDUPE__"]
+
+    @staticmethod
+    def parsedate_tz(data):
+        """Convert a date string to a time tuple.
+
+        Accounts for military timezones.
+        """
+        if not data:
+            return None
+        data = data.split()
+        if data[0][-1] in (',', '.') or data[0].lower() in _daynames:
+            # There's a dayname here. Skip it
+            del data[0]
+        else:
+            # no space after the "weekday,"?
+            i = data[0].rfind(',')
+            if i >= 0:
+                data[0] = data[0][i+1:]
+        if len(data) == 3: # RFC 850 date, deprecated
+            stuff = data[0].split('-')
+            if len(stuff) == 3:
+                data = stuff + data[1:]
+        if len(data) == 4:
+            s = data[3]
+            i = s.find('+')
+            if i > 0:
+                data[3:] = [s[:i], s[i+1:]]
+            else:
+                data.append('') # Dummy tz
+        if len(data) < 5:
+            return None
+        data = data[:5]
+        [dd, mm, yy, tm, tz] = data
+        mm = mm.lower()
+        if not mm in _monthnames:
+            dd, mm = mm, dd.lower()
+            if not mm in _monthnames:
+                return None
+        mm = _monthnames.index(mm)+1
+        if mm > 12: mm = mm - 12
+        if dd[-1] == ',':
+            dd = dd[:-1]
+        i = yy.find(':')
+        if i > 0:
+            yy, tm = tm, yy
+        if yy[-1] == ',':
+            yy = yy[:-1]
+        if not yy[0].isdigit():
+            yy, tz = tz, yy
+        if tm[-1] == ',':
+            tm = tm[:-1]
+        tm = tm.split(':')
+        if len(tm) == 2:
+            [thh, tmm] = tm
+            tss = '0'
+        elif len(tm) == 3:
+            [thh, tmm, tss] = tm
+        else:
+            return None
+        try:
+            yy = int(yy)
+            dd = int(dd)
+            thh = int(thh)
+            tmm = int(tmm)
+            tss = int(tss)
+        except ValueError:
+            return None
+        tzoffset = None
+        tz = tz.upper()
+        if tz in _timezones:
+            tzoffset = _timezones[tz]
+        else:
+            try:
+                tzoffset = int(tz)
+            except ValueError:
+                pass
+        # Convert a timezone offset into seconds ; -0500 -> -18000
+        if tzoffset:
+            if tzoffset < 0:
+                tzsign = -1
+                tzoffset = -tzoffset
+            else:
+                tzsign = 1
+            tzoffset = tzsign * ( (tzoffset//100)*3600 + (tzoffset % 100)*60)
+        return (yy, mm, dd, thh, tmm, tss, 0, 1, 0, tzoffset)
+
+    @staticmethod
+    def tup_to_xml_date(tup):
+        return "{}-{}-{}T{}:{}:{}Z".format(str(tup[0]),
+                                           str(tup[1]).zfill(2),
+                                           str(tup[2]).zfill(2),
+                                           str(tup[3]).zfill(2),
+                                           str(tup[4]).zfill(2),
+                                           str(tup[5]).zfill(2))
