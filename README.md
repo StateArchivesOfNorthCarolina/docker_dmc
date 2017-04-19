@@ -28,6 +28,6 @@ DarcMailCLI.py -a 'GovernorPerdue' -d 'C:\\Repository\\Perdue\\'
 
 ## Options
     -c [integer]    Number of messages per file.
-    -fe             Switch: indicates that the source emails are in .eml format)
-    -j              Switch: produces serialized JSON)
+    -fe             Switch: indicates that the source emails are in .eml format
+    -j              Switch: produces serialized JSON
 
