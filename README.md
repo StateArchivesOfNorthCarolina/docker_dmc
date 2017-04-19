@@ -4,7 +4,10 @@ CmdDarcMailXml.  My goal with this refactor is to modularize the
 tool, and add some functionality.
 
 As of this version DarcMailCLI produces valid EAXS xml in a single 
-file or multiple chunked files if the attachments are stored externally
+file or multiple chunked files if the attachments are stored externally.
+
+As of this version DarcMailCLI can accept email accounts with in EML
+form.
 
 It also produces, optionally, a serialized JSON version of an EAXS
 encoded account.
@@ -24,7 +27,7 @@ DarcMailCLI.py -a [Name of Account] -d [Path to the MBOX structure]
 DarcMailCLI.py -a 'GovernorPerdue' -d 'C:\\Repository\\Perdue\\'
 
 ## Options
-    -c [integer] Number of messages per file.
-    -fe (switch: indicates that the source emails are in .eml format)
-    -j  (switch: produces serialized JSON)
+    -c [integer] \t\tNumber of messages per file.
+    -fe \t\tswitch: indicates that the source emails are in .eml format)
+    -j  \t\tswitch: produces serialized JSON)
 
