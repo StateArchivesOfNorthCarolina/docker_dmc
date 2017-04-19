@@ -6,7 +6,7 @@ tool, and add some functionality.
 As of this version DarcMailCLI produces valid EAXS xml in a single 
 file or multiple chunked files if the attachments are stored externally.
 
-As of this version DarcMailCLI can accept email accounts with in EML
+As of this version DarcMailCLI can accept email accounts in EML
 form.
 
 It also produces, optionally, a serialized JSON version of an EAXS
