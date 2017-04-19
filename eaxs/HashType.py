@@ -25,3 +25,9 @@ class Hash:
         child1.text = self.value
         child2 = etree.SubElement(child, "Function")
         child2.text = self.function
+
+    def render_json(self):
+        hsh = {}
+        hsh['value'] = self.value
+        hsh['function'] = self.function
+        return hsh

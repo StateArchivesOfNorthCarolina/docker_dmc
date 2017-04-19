@@ -26,3 +26,9 @@ class Parameter:
         child1.text = self.value
         child2 = etree.SubElement(child, "Value")
         child2.text = self.value
+
+    def render_json(self):
+        param = {}
+        param['name'] = self.name
+        param['value'] = self.value
+        return param

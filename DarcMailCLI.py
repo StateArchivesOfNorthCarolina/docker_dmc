@@ -14,9 +14,11 @@ import argparse
 import logging
 import logging.config
 import yaml
-from dir_walker import Walker
+from dir_walker import MboxWalker
+from dir_walker.EmlWalker import EmlWalker
 from xml_help.CommonMethods import CommonMethods
 from timeit import default_timer as timer
+import sys
 
 
 class DarcMailCLI(object):
@@ -42,14 +44,18 @@ class DarcMailCLI(object):
         self.data_dir = None
         self.xml_dir = None
         self.mbox_structure = None
-        #  max_internal      = dmc.ALLOCATE_BY_DISPOSITION
+        self.eml_struct = False
+        self.mboxes = None
+        self.eaxs = None
+        self.emls = None
+        self.psts = None
 
         self._arg_parse()
         self._load_logger()
         self.logger = logging.getLogger("DarcMailCLI")
 
     def _load_logger(self):
-        self.basic_logger_path = os.path.join(os.getcwd(), 'basic_logger.yml')
+        self.basic_logger_path = os.path.join(os.path.join(self.eaxs, self.account_name), 'basic_logger.yml')
         if not os.path.exists(self.basic_logger_path):
             self._build_basic_logger()
 
@@ -60,23 +66,13 @@ class DarcMailCLI(object):
     def _build_basic_logger(self):
         self.logger_template_path = os.path.join(os.getcwd(), 'logger_template.yml')
         f = open(self.logger_template_path, 'r')
-        fh = open(self.basic_logger_path, 'w')
-        info = re.compile("info_log")
-        errors = re.compile("errors_log")
-        for line in f.readlines():
-            if info.search(line):
-                m = re.compile('info_log')
-                l = os.path.normpath(m.sub(os.path.join(self.xml_dir, 'info.log'), line))
-                fh.write(l.replace("\t", "\\t"))
-                continue
-            elif errors.search(line):
-                m = re.compile('errors_log')
-                l = m.sub(os.path.join(self.xml_dir, 'error.log'), line)
-                fh.write(l.replace("\t", "\\t"))
-                continue
-            fh.write(line)
-        fh.close()
+        yml = yaml.safe_load(f)
         f.close()
+        yml['handlers']['error_file_handler']['filename'] = os.path.join(self.xml_dir, 'error.log')
+        yml['handlers']['info_file_handler']['filename'] = os.path.join(self.xml_dir, 'info.log')
+        fh = open(self.basic_logger_path, 'w')
+        yaml.dump(yml, fh)
+        fh.close()
 
     def _arg_parse(self):
         parser = argparse.ArgumentParser(description='Convert mbox into XML.')
@@ -105,14 +101,38 @@ class DarcMailCLI(object):
         parser.add_argument('--data-dir', '-dd', dest='data_dir', type=str, default='attachments',
                             help='path to store the account attachments. DEFAULT: "attachments"')
 
+        parser.add_argument('--from-eml', '-fe', dest='from_eml', help='The destination is a series of emls',
+                            action='store_true')
+
+        parser.add_argument('--stitch', '-st', dest='stitch', action='store_true',
+                            help='Stitch can only be used in conjunction with the --chunk switch. The purpose is to '
+                                 'reduce memory load.  If you find that DarcMailCLI is crashing on your email accounts'
+                                 'due to memory errors, but you still want to have a single EAXS file, then chunk the '
+                                 'process, which clears memory faster, and stitch will rebuild a single file at the end'
+                                 'of the process')
+        parser.add_argument('--json', '-j', dest='json_out', action='store_true',
+                            help='This switch enables the output of json serialized mail.  The structure of the json'
+                                 'objects mirror the EAXS structure.')
+
         args = parser.parse_args()
         argdict = vars(args)
-
+        config = yaml.safe_load(open(os.path.join(os.getcwd(), 'config.yml'), 'r'))
         self.account_name = argdict['account_name'].strip()
         self.account_directory = os.path.normpath(os.path.abspath(argdict['account_directory'].strip()))
+
+        # Initialize common features and common attributes
+
         CommonMethods.set_store_rtf_body(False)
         CommonMethods.init_hash_dict()
         CommonMethods.set_dedupe()
+        CommonMethods.set_base_path(config['tomes_dir'])
+        self.eaxs = os.path.join(CommonMethods.get_base_path(), 'eaxs')
+        self.mboxes = os.path.join(CommonMethods.get_base_path(), 'eaxs')
+        self.emls = os.path.join(CommonMethods.get_base_path(), 'emls')
+        self.psts = os.path.join(CommonMethods.get_base_path(), 'pst')
+
+        if argdict['from_eml']:
+            self.eml_struct = True
 
         if 'max_internal' in argdict.keys():
             self.max_internal = int(argdict['max_internal'])
@@ -120,36 +140,45 @@ class DarcMailCLI(object):
         if argdict['no_subdirectories']:
             self.levels = self.NO_LEVELS
 
+        if argdict['json_out']:
+            CommonMethods.set_store_json()
+
         if argdict['data_dir']:
-            base_path = os.path.normpath(os.path.abspath(os.path.join(self.account_directory, os.pardir)))
-            CommonMethods.set_base_path(base_path)
+            base_path = os.path.join(self.eaxs, self.account_name)
             self.data_dir = os.path.normpath(os.path.abspath(os.path.join(base_path, argdict['data_dir'])))
             self.xml_dir = os.path.normpath(os.path.abspath(os.path.join(base_path, "eaxs_xml")))
-            if not os.path.exists(self.data_dir):
-                os.mkdir(self.data_dir)
 
-            if not os.path.exists(self.xml_dir):
-                os.mkdir(self.xml_dir)
+            os.makedirs(self.data_dir)
+            os.makedirs(self.xml_dir)
+            if CommonMethods.get_store_json():
+                self.json_dir = os.path.normpath(os.path.abspath(os.path.join(base_path, "eaxs_json")))
+                os.makedirs(self.json_dir)
+                CommonMethods.set_json_directory(self.json_dir)
 
-            CommonMethods.set_attachment_dir(self.data_dir.split(os.sep)[-1])
-            CommonMethods.set_xml_dir(self.xml_dir.split(os.sep)[-1])
+            CommonMethods.set_rel_attachment_dir(os.path.join(os.path.sep,
+                                                          os.path.join(os.path.split(base_path)[-1], 'attachments')))
+            CommonMethods.set_attachment_dir(self.data_dir)
+            CommonMethods.set_xml_dir(self.xml_dir)
+
         else:
-            base_path = os.path.abspath(os.path.join(self.account_directory, os.pardir))
+            base_path = os.path.join(self.eaxs, self.account_name)
             CommonMethods.set_base_path(base_path)
             self.data_dir = os.path.normpath(os.path.join(base_path, "data"))
             self.xml_dir = os.path.normpath(os.path.abspath(os.path.join(base_path, "eaxs_xml")))
-            if not os.path.exists(self.data_dir):
-                os.mkdir(self.data_dir)
 
-            if not os.path.exists(self.xml_dir):
-                os.mkdir(self.xml_dir)
-
+            os.makedirs(self.data_dir)
+            os.makedirs(self.xml_dir)
             CommonMethods.set_attachment_dir(self.data_dir)
             CommonMethods.set_xml_dir(self.xml_dir)
+            if CommonMethods.get_store_json():
+                CommonMethods.set_json_directory(self.json_dir)
+                os.makedirs(self.json_dir)
+                self.json_dir = os.path.normpath(os.path.abspath(os.path.join(base_path, "eaxs_json")))
 
         if 'chunk' in argdict.keys():
             self.chunksize = argdict['chunk']
             CommonMethods.set_chunk_size(self.chunksize)
+            CommonMethods.set_stitch(argdict['stitch'])
 
     def validate(self):
         # TODO: Determine what constitutes a valid structure and what does not.  This basically follows assumptions made
@@ -164,7 +193,7 @@ class DarcMailCLI(object):
         Runs the whole #!
         :return:
         '''
-        wlk = Walker.DirectoryWalker(self.account_directory, self.xml_dir, self.account_name)
+        wlk = MboxWalker.MboxWalker(self.account_directory, self.xml_dir, self.account_name)
         wlk._gather_mboxes()
         wlk.do_walk()
 
@@ -297,12 +326,26 @@ class ValidateStructure(object):
                 ind += 1
 
 
+class BuildEmlDarcmail(object):
+    def __init__(self, darcmail):
+        self.account_directory = darcmail.account_directory
+        self.account_name = darcmail.account_name
+        self.xml_dir = darcmail.xml_dir
+        emwalk = EmlWalker(self.account_directory, self.xml_dir, self.account_name)
+        emwalk.do_walk()
+
+
 if __name__ == "__main__":
     dmcli = DarcMailCLI()
+    if dmcli.eml_struct:
+        beml = BuildEmlDarcmail(dmcli)
+        exit()
+
     if dmcli.validate():
         start = timer()
         dmcli.convert()
         end = timer()
         print(end-start)
+        sys.exit(0)
     else:
         print("Invalid Folder Structure")

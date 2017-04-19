@@ -5,8 +5,10 @@
 # Description: Implements the EAXS message-type
 ##############################################################
 
+from collections import OrderedDict
 from email.message import Message
 import email
+import sys
 
 
 import eaxs.eaxs_helpers.Restrictors as restrict
@@ -76,11 +78,12 @@ class DmMessage:
         self.multiple_body = []  # type: list[MultiBody]
 
         try:
-            self.eol = CommonMethods.get_eol(self.message.as_string())  # type: str
+            self.eol = CommonMethods.get_eol(self.message.as_string(policy=self.message.policy.clone(utf8=True)))  # type: str
         except KeyError as e:
             self.logger.error("Inspect Message: KeyError {}".format(self.message.get("Message-ID")))
             self.incomplete.append(IncompleteParse('KeyError parsing EOL', e))
         except UnicodeEncodeError as ue:
+            print(sys.gettrace())
             self.logger.error("Inspect Message: UnicodeEncodeError {}".format(self.message.get("Message-ID")))
             self.incomplete.append(IncompleteParse('UnicodeEncodeError parsing EOL', ue))
         except LookupError as le:
@@ -88,6 +91,8 @@ class DmMessage:
             self.incomplete.append(IncompleteParse('LookupError parsing EOL', le))
         except Exception as er:
             self.incomplete.append(IncompleteParse('LookupError parsing EOL', er))
+        finally:
+            self.eol = 'LF'
 
         self.hash = CommonMethods.get_hash(self.message.as_bytes())  # type: Hash
 
@@ -133,3 +138,106 @@ class DmMessage:
                         continue
                     child = etree.SubElement(message, value)
                     child.text = self.__getattribute__(key)
+
+    def _get_message_id(self):
+        if isinstance(self.message_id, etree.CDATA):
+            return CommonMethods.cdata_unwrap(self.message_id)
+        return self.message_id
+
+    def _get_from(self):
+        if isinstance(self.m_from, etree.CDATA):
+            return CommonMethods.cdata_unwrap(self.m_from)
+        return self.m_from
+
+    def _get_to(self):
+        if isinstance(self.m_to, etree.CDATA):
+            return CommonMethods.cdata_unwrap(self.m_to)
+        return self.m_to
+
+    def _get_cc(self):
+        if isinstance(self.cc, etree.CDATA):
+            return CommonMethods.cdata_unwrap(self.cc)
+        return self.cc
+
+    def _get_bcc(self):
+        if isinstance(self.bcc, etree.CDATA):
+            return CommonMethods.cdata_unwrap(self.bcc)
+        return self.bcc
+
+    def _get_sender(self):
+        if isinstance(self.sender, etree.CDATA):
+            return CommonMethods.cdata_unwrap(self.sender)
+        return self.sender
+
+    def _get_in_reply_to(self):
+        if isinstance(self.in_reply_to, etree.CDATA):
+            return CommonMethods.cdata_unwrap(self.in_reply_to)
+        return self.in_reply_to
+
+    def _get_subject(self):
+        if isinstance(self.subject, etree.CDATA):
+            return CommonMethods.cdata_unwrap(self.subject)
+        return self.subject
+
+    def _get_headers(self):
+        if len(self.headers) > 0:
+            return [x.render_json() for x in self.headers]
+        return None
+
+    def _get_single_bodies(self):
+        if len(self.single_body) > 0:
+            return [x.render_json() for x in self.single_body]
+        return None
+
+    def _get_multibody(self):
+        if isinstance(self.multiple_body, list):
+            return [x.render_json() for x in self.multiple_body]
+        elif isinstance(self.multiple_body, MultiBody):
+            return self.multiple_body.render_json()
+        return []
+
+    def _get_incomplete(self):
+        if isinstance(self.incomplete, IncompleteParse):
+            return self.incomplete.render_json()
+        return None
+
+    def _get_references(self):
+        if isinstance(self.references, etree.CDATA):
+            return CommonMethods.cdata_unwrap(self.references)
+        return self.references
+
+    def _get_comments(self):
+        if isinstance(self.comments, etree.CDATA):
+            return CommonMethods.cdata_unwrap(self.comments)
+        return self.comments
+
+    def _get_keywords(self):
+        if isinstance(self.keywords, etree.CDATA):
+            return CommonMethods.cdata_unwrap(self.keywords)
+        return self.keywords
+
+    def render_json(self):
+        message = OrderedDict()
+        message['relpath'] = self.relative_path
+        message['message_id'] = self._get_message_id()
+        message['mime_version'] = self.mime_version
+        message['incomplete'] = self._get_incomplete()
+        message['orig_date'] = self.orig_date
+        message['from'] = self._get_from()
+        message['to'] = self._get_to()
+        message['sender'] = self._get_sender()
+        message['cc'] = self._get_cc()
+        message['bcc'] = self._get_bcc()
+        message['in_reply_to'] = self._get_in_reply_to()
+        message['subject'] = self._get_subject()
+        message['references'] = self._get_references()
+        message['comments'] = self._get_comments()
+        message['keywords'] = self._get_keywords()
+        message['status_flag'] = self.status_flag
+        message['headers'] = self._get_headers()
+        message['single_body'] = self._get_single_bodies()
+        message['multi_body'] = self._get_multibody()
+        message['eol'] = self.eol
+        message['hash'] = self.hash.render_json()
+        return OrderedDict({k: v for k, v in message.items() if v not in CommonMethods.empties})
+

@@ -35,4 +35,8 @@ class Header:
         except TypeError as te:
             pass
 
-
+    def render_json(self):
+        header = {}
+        header['name'] = self.name
+        header['value'] = self.value
+        return header

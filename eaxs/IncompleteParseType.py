@@ -26,3 +26,9 @@ class IncompleteParse:
         child1.text = self.error_type
         child2 = etree.SubElement(int_bdy_head, "ErrorLocation")
         child2.text = self.error_location
+
+    def render_json(self):
+        ip = {}
+        ip['error_type'] = self.error_type
+        ip['error_location'] = self.error_location
+        return ip

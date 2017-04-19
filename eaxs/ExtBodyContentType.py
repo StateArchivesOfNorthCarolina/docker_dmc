@@ -22,7 +22,7 @@ class ExtBodyContent:
     def __init__(self):
         """Constructor for ExtBodyContent"""
         self.attachment_folder = CommonMethods.get_attachment_directory()
-        self.attachment_directory = os.path.join(CommonMethods.get_base_path(), self.attachment_folder)
+        self.attachment_directory = os.path.join(CommonMethods.get_attachment_directory(), self.attachment_folder)
         self.rel_path = None  # type: str
         self.char_set = None  # type: str
         self.transfer_encoding = None  # type: str
@@ -41,7 +41,7 @@ class ExtBodyContent:
         if self.xml_wrapped:
             try:
                 fn = '{}{}'.format(self.gid, '.xml')
-                self.rel_path = ".\{}\{}".format(CommonMethods.get_attachment_directory(), fn)
+                self.rel_path = ".{}\{}".format(CommonMethods.get_rel_attachment_dir(), fn)
                 fh = codecs.open(os.path.join(self.attachment_directory, fn), "w", "utf-8")
                 fh.write(xml)
                 fh.close()
@@ -86,6 +86,17 @@ class ExtBodyContent:
             child6.text = self.eol
         self.hash.render(ext_bdy_head)
 
+    def render_json(self):
+        extbody = {}
+        extbody['local_id'] = self.local_id
+        extbody['rel_path'] = self.rel_path
+        extbody['charset'] = self.char_set
+        extbody['transfer_encoding'] = self.transfer_encoding
+        extbody['xml_wrapped'] = self.xml_wrapped
+        extbody['eol'] = self.eol
+        extbody['hash'] = self.hash.render_json()
+        return extbody
+
     def _build_dedup(self, children):
         """
        :type children : OrderedDict
@@ -104,7 +115,7 @@ class ExtBodyContent:
             self.body_content = None
         else:
             self.gid = CommonMethods.get_ext_gid(self.hash.value)
-            self.rel_path = ".{}{}{}{}.xml".format(os.sep, CommonMethods.get_attachment_directory(), os.sep, self.gid.__str__())
+            self.rel_path = ".{}{}{}{}.xml".format(os.sep, CommonMethods.get_rel_attachment_dir(), os.sep, self.gid.__str__())
             self.body_content = None
             self.logger.info("Duplicate Attachment: {}".format(self.gid.__str__()))
 

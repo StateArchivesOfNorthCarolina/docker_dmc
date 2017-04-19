@@ -5,6 +5,8 @@
 # Description: Implementation of the int-body-content-type
 ##############################################################
 from lxml.ElementInclude import etree
+from xml_help import CommonMethods
+
 
 
 class IntBodyContent:
@@ -22,10 +24,24 @@ class IntBodyContent:
         :param parent:
         :return:
         """
-        int_bdy_head = etree.SubElement(parent, "BodyContent")
-        child1 = etree.SubElement(int_bdy_head, "Content")
-        child1.text = self.content
-        child2 = etree.SubElement(int_bdy_head, "CharSet")
-        child2.text = self.char_set
-        child3 = etree.SubElement(int_bdy_head, "TransferEncoding")
-        child3.text = self.transfer_encoding
+        try:
+            int_bdy_head = etree.SubElement(parent, "BodyContent")
+            child1 = etree.SubElement(int_bdy_head, "Content")
+            child1.text = self.content
+            child2 = etree.SubElement(int_bdy_head, "CharSet")
+            child2.text = self.char_set
+            child3 = etree.SubElement(int_bdy_head, "TransferEncoding")
+            child3.text = self.transfer_encoding
+        except ValueError as e:
+            pass
+
+    def _get_content(self):
+        if isinstance(self.content, etree.CDATA):
+            return CommonMethods.CommonMethods.cdata_unwrap(self.content)
+
+    def render_json(self):
+        intbcont = {}
+        intbcont['content'] = self._get_content()
+        intbcont['charset'] = self.char_set
+        intbcont['transfer_encoding'] = self.transfer_encoding
+        return intbcont

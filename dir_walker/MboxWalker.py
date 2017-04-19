@@ -1,5 +1,5 @@
 #############################################################
-# 2016-09-22: Walker.py
+# 2016-09-22: MboxWalker.py
 # Author: Jeremy M. Gibson (State Archives of North Carolina)
 #
 # Description:
@@ -13,11 +13,12 @@ from eaxs.FolderType import Folder
 import logging
 import re
 import email
-from email.parser import Parser
+import gc
 from email.message import Message
+import json
 
 
-class DirectoryWalker:
+class MboxWalker:
     """"""
 
     def __init__(self, root_level, xml_dir, account_name):
@@ -29,7 +30,7 @@ class DirectoryWalker:
         self.current_relpath = None  # type: str
         self.xml_dir = xml_dir
         self.account = Account(account_name, xml_dir)
-        self.logger = logging.getLogger("DirectoryWalker")
+        self.logger = logging.getLogger("MboxWalker")
         self.total_messages_processed = 0  # type: int
         self.chunks = 0  # type: int
         self.tracking_pos = 0  # type: int
@@ -40,6 +41,9 @@ class DirectoryWalker:
         self.mboxes = []  # type: list
         self.new_folder = False
         self.mesg_begin = re.compile('^From((\s(\"|.+).+\@)|(\s(\".+\")\s))')
+        self.json_folders = []
+        if CommonMethods.get_store_json():
+            self.json_write = CommonMethods.get_json_directory()
 
     def _gather_mboxes(self):
         for root, dirs, files in os.walk(self.root, topdown=True):
@@ -57,18 +61,26 @@ class DirectoryWalker:
         self.start_account()
         self.chunks = 0
         self.tracking_pos = 0
+        gc.collect()
 
     def _fldr_render_continue(self, path):
         self._fldr_render(path)
+        gc.collect()
 
     def _fldr_render(self, path):
         fldr = Folder(self.current_relpath, path)
         fldr.messages = self.messages
         fldr.render()
+        if CommonMethods.get_store_json():
+            fh = open(os.path.join(self.json_write, fldr.name + ".json"), 'w', encoding='utf-8')
+            jsn = fldr.render_json()
+            json.dump(jsn, fh)
+            fh.close()
         self.logger.info('Wrote folder of size {} bytes'.format(fldr.mbox_size))
         self.logger.info('Messages processed: {}'.format(self.total_messages_processed))
         fldr = None
         self.messages = []
+        gc.collect()
 
     def do_walk(self):
         self.start_account()
@@ -80,6 +92,8 @@ class DirectoryWalker:
             self.message_generator(path)
             self._fldr_render_continue(path)
         self.close_account()
+        if CommonMethods.get_stitch():
+            self.account.stitch_account()
 
     def message_generator(self, path):
         """
@@ -95,7 +109,6 @@ class DirectoryWalker:
             # Open the mbox found at path
             while True:
                 line = CommonMethods.sanitize(fh.readline())
-                #line = fh.readline()
                 if len(line) == 0:
                     # Clunky ass way to find end of file, but whatevs. write the final message and clear
                     # buffer.
@@ -121,11 +134,14 @@ class DirectoryWalker:
                 buff.append(line)
 
     def _transform_buffer(self, buff, path):
-        mes = email.message_from_bytes(b''.join(buff))  # type: Message
-        self.logger.info("Processing Message-ID {}".format(mes.get("Message-ID")))
-        self._process_message(mes, path)
-        self.total_messages_processed += 1
-        self.chunks += 1
+        try:
+            mes = email.message_from_bytes(b''.join(buff))  # type: Message
+            self.logger.info("Processing Message-ID {}".format(mes.get("Message-ID")))
+            self._process_message(mes, path)
+            self.total_messages_processed += 1
+            self.chunks += 1
+        except MemoryError as me:
+            print()
 
     def _process_message(self, mes, path):
         e_msg = DmMessage(self.get_rel_path(path), CommonMethods.increment_local_id(), mes)

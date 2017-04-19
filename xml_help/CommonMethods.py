@@ -5,9 +5,9 @@ from eaxs.HashType import Hash
 from lxml.ElementInclude import etree
 from collections import OrderedDict
 import logging
+import ftfy
+import ftfy.bad_codecs
 import unicodedata
-from datetime import datetime
-import string
 
 
 global __LOCALID__
@@ -38,7 +38,12 @@ _timezones = {'UT':0, 'UTC':0, 'GMT':0, 'Z':0,
               'PST': -800, 'PDT': -700   # Pacific
               }
 
+
+
 class CommonMethods:
+    globals()["__STITCH__"] = False
+    globals()["__STOREJSON__"] = False
+    empties = ['', None, []]
 
     @staticmethod
     def init_hash_dict():
@@ -51,6 +56,22 @@ class CommonMethods:
     @staticmethod
     def get_chunksize():
         return globals()["__CHUNKS__"]
+
+    @staticmethod
+    def set_stitch(stitch):
+        """
+        :type stitch: bool
+        :param stitch:
+        :return:
+        """
+        globals()["__STITCH__"] = stitch
+
+    @staticmethod
+    def get_stitch():
+        """"
+        :return bool:
+        """
+        return globals()["__STITCH__"]
 
     @staticmethod
     def get_messagetype_map():
@@ -136,7 +157,7 @@ class CommonMethods:
 
         try:
             if re.search("[<>\'\"]", text) is not None:
-                return etree.CDATA(text)
+                return etree.CDATA(CommonMethods.remove_control_chars(text))
                 pass
             return text
         except ValueError as ve:
@@ -145,13 +166,50 @@ class CommonMethods:
             raise
 
     @staticmethod
+    def cdata_unwrap(obj):
+        """
+        :type obj: etree.CDATA
+        :param obj:
+        :return:
+        """
+        el = etree.Element("root")
+        el.text = obj
+        return el.text
+
+
+    @staticmethod
     def sanitize(text):
         '''
         :type text: bytes
         :param text:
         :return:
         '''
-        return text.decode('ascii', 'ignore').encode('utf-8')
+        try:
+            return text.decode('utf-8', 'strict').encode('utf-8')
+        except UnicodeDecodeError as e:
+            test = ftfy.fix_encoding(text.decode('utf-8', 'replace'))
+            return test.encode('utf-8', 'strict')
+        except Exception as e:
+            print(e)
+            return ''
+
+    @staticmethod
+    def sanitize_string(text):
+        '''
+
+        :param text: str
+        :return:
+        '''
+
+        try:
+            return ftfy.fix_encoding(text)
+        except Exception as e:
+            print(e)
+            return ''
+
+    @staticmethod
+    def remove_control_chars(s):
+        return "".join(ch for ch in s if unicodedata.category(ch)[0] != "C")
 
     @staticmethod
     def get_content_type(content_type):
@@ -203,7 +261,7 @@ class CommonMethods:
         :return:
         '''
         hsh = hashlib.sha1()
-        hsh.update(message)
+        hsh.update(CommonMethods.sanitize(message))
         return Hash(hsh.hexdigest(), restrict.SHA1)
 
     @staticmethod
@@ -223,12 +281,36 @@ class CommonMethods:
         return globals()["__ATTACHMENTS__"]
 
     @staticmethod
+    def set_rel_attachment_dir(s):
+        globals()["__REL_ATTACHMENTS__"] = s
+
+    @staticmethod
+    def get_rel_attachment_dir():
+        return globals()["__REL_ATTACHMENTS__"]
+
+    @staticmethod
     def set_xml_dir(folder='eaxs_xml'):
         globals()["__EAXS_XML__"] = folder
 
     @staticmethod
     def get_xml_directory():
         return globals()["__EAXS_XML__"]
+
+    @staticmethod
+    def set_json_directory(folder):
+        globals()["__EAXS_JSON__"] = folder
+
+    @staticmethod
+    def get_json_directory():
+        return globals()["__EAXS_JSON__"]
+
+    @staticmethod
+    def set_store_json():
+        globals()["__STOREJSON__"] = True
+
+    @staticmethod
+    def get_store_json():
+        return globals()["__STOREJSON__"]
 
     @staticmethod
     def set_store_rtf_body(val=False):
@@ -354,9 +436,24 @@ class CommonMethods:
 
     @staticmethod
     def tup_to_xml_date(tup):
-        return "{}-{}-{}T{}:{}:{}Z".format(str(tup[0]),
-                                           str(tup[1]).zfill(2),
-                                           str(tup[2]).zfill(2),
-                                           str(tup[3]).zfill(2),
-                                           str(tup[4]).zfill(2),
-                                           str(tup[5]).zfill(2))
+        d = "{}-{}-{}T{}:{}:{}Z"
+        try:
+            return d.format(str(tup[0]).zfill(4),
+                            str(tup[1]).zfill(2),
+                            str(tup[2]).zfill(2),
+                            str(tup[3]).zfill(2),
+                            str(tup[4]).zfill(2),
+                            str(tup[5]).zfill(2))
+        except TypeError as e:
+            return d.format("1900", "01", "01", "12", "00", "00")
+
+    @staticmethod
+    def valid_xml_char_ordinal(c):
+        codepoint = ord(c)
+        # conditions ordered by presumed frequency
+        return (
+            0x20 <= codepoint <= 0xD7FF or
+            codepoint in (0x9, 0xA, 0xD) or
+            0xE000 <= codepoint <= 0xFFFD or
+            0x10000 <= codepoint <= 0x10FFFF
+        )

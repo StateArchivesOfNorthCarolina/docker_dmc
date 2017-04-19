@@ -58,7 +58,7 @@ class SingleBody:
         self.other_mime_header = []  # type: list[Header]
         self.body_content = []  # type: list[IntBodyContent]
         self.ext_body_content = []  # type: list[ExtBodyContent]
-        self.child_message = None  # type: ChildMessage
+        self.child_message = []  # type: list[ChildMessage]
         self.phantom_body = None  # type: str
         self.append_body = True
         self.logger = logging.getLogger("SingleBodyType")
@@ -131,11 +131,20 @@ class SingleBody:
                 self._process_plaintext_body()
             else:
                 try:
-                    self.body_content.append(IntBodyContent(CommonMethods.cdata_wrap(self.body_content),
-                                                            self.transfer_encoding, self.charset))
+                    intbody = IntBodyContent(CommonMethods.cdata_wrap(self.body_content),
+                                             self.transfer_encoding, self.charset)
+                    if intbody.content is None:
+                        return
+                    if self.body_only:
+                        self.body_content = []
+                        self.body_content.append(intbody)
+                        return
+                    self.body_content.append(intbody)
                 except AttributeError as e:
                     # This message is completely empty
                     self.body_content = []
+                except ValueError as ve:
+                    intbody = IntBodyContent(self.body_content, self.transfer_encoding, self.charset)
 
     def _full_ext_body(self):
         extbody = ExtBodyContent()
@@ -181,7 +190,11 @@ class SingleBody:
             t = re.sub("]]", "\]\]", t)
 
         try:
-            self.body_content.append(IntBodyContent(CommonMethods.cdata_wrap(t), self.transfer_encoding, self.charset))
+            sbint = IntBodyContent(CommonMethods.cdata_wrap(t), self.transfer_encoding, self.charset)
+            if sbint.content == '' or sbint is None:
+                self.payload = None
+                return
+            self.body_content.append(sbint)
         except ValueError as ve:
             self.logger.error("{}".format(ve))
         self.payload = None
@@ -257,4 +270,118 @@ class SingleBody:
                 try:
                     child.text = self.__getattribute__(key)
                 except TypeError as e:
-                    print()
+                    pass
+
+    def _get_content_type(self):
+        if self.content_type is not None:
+            return self.content_type
+        return str()
+
+    def _get_charset(self):
+        if self.charset is not None:
+            return self.charset
+        return str()
+
+    def _get_content_name(self):
+        if self.content_name is not None:
+            return self.content_name
+        return str()
+
+    def _get_content_type_comments(self):
+        if self.content_id_comments is not None:
+            return self.content_id_comments
+        return str()
+
+    def _get_content_type_params(self):
+        if len(self.content_type_param) > 0:
+            return [x.render_json() for x in self.content_type_param]
+        return []
+
+    def _get_transfer_encoding(self):
+        if self.transfer_encoding is not None:
+            return self.transfer_encoding
+        return str()
+
+    def _get_te_comments(self):
+        if self.transfer_encoding_comments is not None:
+            return self.transfer_encoding_comments
+        return str()
+
+    def _get_content_id(self):
+        if self.content_id is not None:
+            return self.content_id
+        return str()
+
+    def _get_content_id_comments(self):
+        if self.content_id_comments is not None:
+            return self.content_id_comments
+        return str()
+
+    def _get_description(self):
+        if self.description is not None:
+            return self.description
+        return str()
+
+    def _get_descrip_comments(self):
+        if self.description_comments is not None:
+            return self.description_comments
+        return str()
+
+    def _get_disposition(self):
+        if self.disposition is not None:
+            return self.disposition
+        return str()
+
+    def _get_disposition_comments(self):
+        if self.disposition_comments is not None:
+            return self.description_comments
+        return str()
+
+    def _get_disposition_filename(self):
+        if self.disposition_file_name is not None:
+            return self.disposition_file_name
+        return str()
+
+    def _get_disposition_params(self):
+        if len(self.disposition_params) > 0:
+            return [x.render_json() for x in self.disposition_params]
+        return []
+
+    def _get_other_mime_header(self):
+        if len(self.other_mime_header) > 0:
+            return [x.render_json() for x in self.other_mime_header]
+        return []
+
+    def _get_body_content(self):
+        if len(self.body_content) > 0:
+            return [x.render_json() for x in self.body_content]
+        return []
+
+    def _get_ext_body_content(self):
+        if len(self.ext_body_content) > 0:
+            l = [x.render_json() for x in self.ext_body_content]
+            return l
+        return []
+
+    def render_json(self):
+        sbody = {}
+        sbody['content_type'] = self._get_content_type()
+        sbody['charset'] = self._get_charset()
+        sbody['content_name'] = self._get_content_name()
+        sbody['content_type_comments'] = self._get_content_type_comments()
+        sbody['content_type_param'] = self._get_content_type_params()
+        sbody['transfer_encoding'] = self._get_transfer_encoding()
+        sbody['transfer_encoding_comments'] = self._get_te_comments()
+        sbody['content_id'] = self._get_content_id()
+        sbody['content_id_comments'] = self._get_content_id_comments()
+        sbody['description'] = self._get_description()
+        sbody['description_comments'] = self._get_descrip_comments()
+        sbody['disposition'] = self._get_disposition()
+        sbody['disposition_comments'] = self._get_disposition_comments()
+        sbody['disposition_file_name'] = self._get_disposition_filename()
+        sbody['disposition_params'] = self._get_disposition_params()
+        sbody['other_mime_header'] = self._get_other_mime_header()
+        sbody['body_content'] = self._get_body_content()
+        sbody['ext_body_content'] = self._get_ext_body_content()
+        sbody['phantom_message'] = self.phantom_body
+        return sbody

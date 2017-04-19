@@ -4,10 +4,11 @@
 #
 # Description: Implements the EAXS folder-type complex type
 ##############################################################
+
 import os
 from eaxs.MessageType import DmMessage
 from lxml.ElementInclude import etree
-import re
+from collections import OrderedDict
 from xml_help.CommonMethods import CommonMethods
 
 
@@ -41,7 +42,15 @@ class Folder:
                 try:
                     mes.render(folder)
                 except AttributeError as e:
-                    print()
+                    pass
         outfile = open(CommonMethods.get_eaxs_filename(), "ab")
         etree.ElementTree(folder).write(outfile, encoding="utf-8", pretty_print=True)
         folder = None
+
+    def render_json(self):
+        folders = OrderedDict()
+        folders['name'] = self.name
+        folders['relpath'] = self.relpath
+        folders['messages'] = [x.render_json() for x in self.messages]
+        folders['folders'] = [x.render_json() for x in self.folders]
+        return OrderedDict({k: v for k, v in folders.items() if v not in CommonMethods.empties})

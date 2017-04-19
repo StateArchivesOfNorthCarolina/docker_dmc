@@ -29,6 +29,7 @@ class Account(object):
         self.element_doc = None  # type: etree.Element
         self.logger = logging.getLogger("Account")
         self.current_eaxs_file = None  # type: str
+        self.files = []  # type: list
 
     def write_global_id(self):
         try:
@@ -77,5 +78,36 @@ class Account(object):
 
     def _start_account_chunks(self):
         fn = '{}_{}_{}.xml'.format(self.xml_name, "LID", CommonMethods.get_current_local_id())
+        self.files.append(fn)
         self.current_eaxs_file = os.path.join(self.xml_loc, fn)
         self._write_file()
+
+    def stitch_account(self):
+        print("Stitching the {} account.".format(self.global_id))
+        fh = open(os.path.join(self.xml_loc, '{}.xml'.format(self.global_id)), 'w+', encoding='utf-8')
+        fh.write(self.get_root_element_attributes())
+        fh.write(self.get_id())
+        for fn in self.files:
+            acc_part = open(os.path.join(self.xml_loc, fn), 'r', encoding='utf-8')
+            x = 0
+            for line in acc_part.readlines():
+                if x < 4:
+                    x += 1
+                    continue
+                if line == '</Account>\n':
+                    continue
+                fh.write(line)
+            acc_part.close()
+            os.remove(os.path.join(self.xml_loc, fn))
+        fh.write('</Account>')
+
+    def render_json(self):
+        acct = {}
+        acct['gid'] = self.global_id
+        acct['email'] = self.email_address
+        acct['ref_account'] = self.reference_account
+        acct['folders'] = self.folders
+        return acct
+
+
+
