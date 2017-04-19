@@ -27,7 +27,7 @@ DarcMailCLI.py -a [Name of Account] -d [Path to the MBOX structure]
 DarcMailCLI.py -a 'GovernorPerdue' -d 'C:\\Repository\\Perdue\\'
 
 ## Options
-    -c [integer] \t\tNumber of messages per file.
-    -fe \t\tswitch: indicates that the source emails are in .eml format)
-    -j  \t\tswitch: produces serialized JSON)
+    -c [integer]    Number of messages per file.
+    -fe             Switch: indicates that the source emails are in .eml format)
+    -j              Switch: produces serialized JSON)
 
