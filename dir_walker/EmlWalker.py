@@ -17,6 +17,7 @@ import email
 import gc
 from collections import OrderedDict
 from email.message import Message
+import json
 
 
 class DefaultListOrderedDict(OrderedDict):
@@ -41,6 +42,8 @@ class EmlWalker:
         self.account.write_global_id()
         self.chunks = 0
         self.new_account = True
+        if CommonMethods.get_store_json():
+            self.json_write = CommonMethods.get_json_directory()
 
     def do_walk(self):
         for root, dirs, files in os.walk(self.account_directory):
@@ -117,6 +120,11 @@ class EmlWalker:
         fldr = Folder(self.current_relpath, path)
         fldr.messages = self.messages
         fldr.render()
+        if CommonMethods.get_store_json():
+            fh = open(os.path.join(self.json_write, fldr.name + ".json"), 'w', encoding='utf-8')
+            jsn = fldr.render_json()
+            json.dump(jsn, fh)
+            fh.close()
         self.logger.info('Wrote folder of size {} bytes'.format(fldr.mbox_size))
         self.logger.info('Messages processed: {}'.format(self.total_messages_processed))
         fldr = None
