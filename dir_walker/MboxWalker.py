@@ -73,6 +73,7 @@ class MboxWalker:
         fldr.render()
         if CommonMethods.get_store_json():
             fh = open(os.path.join(self.json_write, fldr.name + ".json"), 'w', encoding='utf-8')
+            fh.write(',')
             jsn = fldr.render_json()
             json.dump(jsn, fh)
             fh.close()

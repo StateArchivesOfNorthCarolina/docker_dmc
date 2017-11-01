@@ -14,11 +14,13 @@ from email.message import Message
 from email.charset import Charset
 from xml_help.CommonMethods import CommonMethods
 from urllib.parse import unquote
-from lxml.ElementInclude import etree
+import lxml.etree as etree
 from collections import OrderedDict
 import logging
 import re
 from bs4 import BeautifulSoup as bsoup
+from hurry.filesize import size
+import sys
 
 
 class SingleBody:
@@ -188,6 +190,11 @@ class SingleBody:
         elif isinstance(self.payload, str):
             t = re.sub("\[\[", "\\[\\[", self._soupify(self.payload))
             t = re.sub("]]", "\]\]", t)
+        s = sys.getsizeof(t)
+        if s > (1024 ** 2):
+            # This is probably not a plaintext payload. Punt to external body.
+            self._full_ext_body()
+            return
 
         try:
             sbint = IntBodyContent(CommonMethods.cdata_wrap(t), self.transfer_encoding, self.charset)
@@ -309,6 +316,8 @@ class SingleBody:
 
     def _get_content_id(self):
         if self.content_id is not None:
+            if isinstance(self.content_id, etree.CDATA):
+                return CommonMethods.cdata_unwrap(self.content_id)
             return self.content_id
         return str()
 
@@ -353,7 +362,7 @@ class SingleBody:
         return []
 
     def _get_body_content(self):
-        if len(self.body_content) > 0:
+        if self.body_content is not None and len(self.body_content) > 0:
             return [x.render_json() for x in self.body_content]
         return []
 
@@ -364,7 +373,7 @@ class SingleBody:
         return []
 
     def render_json(self):
-        sbody = {}
+        sbody = OrderedDict()
         sbody['content_type'] = self._get_content_type()
         sbody['charset'] = self._get_charset()
         sbody['content_name'] = self._get_content_name()
@@ -384,4 +393,4 @@ class SingleBody:
         sbody['body_content'] = self._get_body_content()
         sbody['ext_body_content'] = self._get_ext_body_content()
         sbody['phantom_message'] = self.phantom_body
-        return sbody
+        return OrderedDict({k: v for k, v in sbody.items() if v not in CommonMethods.empties})

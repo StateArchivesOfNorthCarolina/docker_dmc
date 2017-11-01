@@ -227,6 +227,7 @@ class ValidateStructure(object):
         if not self.check_folder(mbox_inventory, self.folder_name):
             self.is_valid = False
             return
+
         if self.folder_name:
             hit = False
             for (fname, mname, dir) in mbox_inventory:
@@ -260,7 +261,7 @@ class ValidateStructure(object):
                         self.find_mbox_files(folder_data, child)
                     else:
                         ##  Jeremy M. Gibson (State Archives of North Carolina)
-                        ##  2016-16-06 added this section for readpst compatibility
+                        ##  2016-06-16 added this section for readpst compatibility
                         head, tail = os.path.split(parent)
                         folder_name = tail
                         folder_mbox = os.path.basename(child)
@@ -299,7 +300,7 @@ class ValidateStructure(object):
             self.rename_dups(duplicate_folders, mbox_inventory)
             return True
         elif folder and folder not in folder_count.keys():
-            self.logger.infor('File {}.mbox cannot be found under the account directory'.format(folder))
+            self.logger.info('File {}.mbox cannot be found under the account directory'.format(folder))
             return False
         return True
 

@@ -7,6 +7,7 @@
 import re
 from lxml.ElementInclude import etree
 from xml_help.CommonMethods import CommonMethods
+from collections import OrderedDict
 
 
 class Header:
@@ -36,7 +37,7 @@ class Header:
             pass
 
     def render_json(self):
-        header = {}
+        header = OrderedDict()
         header['name'] = self.name
         header['value'] = self.value
         return header

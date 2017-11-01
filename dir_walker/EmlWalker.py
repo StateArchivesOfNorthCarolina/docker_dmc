@@ -121,9 +121,11 @@ class EmlWalker:
         fldr.messages = self.messages
         fldr.render()
         if CommonMethods.get_store_json():
-            fh = open(os.path.join(self.json_write, fldr.name + ".json"), 'w', encoding='utf-8')
+            fh = open(os.path.join(self.json_write, self.account_name + ".json"), 'a', encoding='utf-8')
+            fh.write(',')
             jsn = fldr.render_json()
-            json.dump(jsn, fh)
+            json.dump(jsn, fh, sort_keys=False, indent=4)
+            # json.dump(jsn, fh)
             fh.close()
         self.logger.info('Wrote folder of size {} bytes'.format(fldr.mbox_size))
         self.logger.info('Messages processed: {}'.format(self.total_messages_processed))

@@ -34,7 +34,7 @@ class ExtBodyContent:
         self.gid = uuid.uuid4()  # type: uuid
         self.logger = logging.getLogger("ExtBodyContent")
 
-    def set_hash(self, hdigest, ht='SHA1'):
+    def set_hash(self, hdigest, ht='SHA256'):
         self.hash = Hash(hdigest, ht)
 
     def write_ext_body(self, xml):
@@ -46,9 +46,9 @@ class ExtBodyContent:
                 fh.write(xml)
                 fh.close()
             except UnicodeDecodeError as e:
-                print(e)
+                self.logger.error(e)
             except UnicodeEncodeError as e:
-                print(e)
+                self.logger.error(e)
 
     def build_xml_file(self, children):
         """
@@ -87,7 +87,7 @@ class ExtBodyContent:
         self.hash.render(ext_bdy_head)
 
     def render_json(self):
-        extbody = {}
+        extbody = OrderedDict()
         extbody['local_id'] = self.local_id
         extbody['rel_path'] = self.rel_path
         extbody['charset'] = self.char_set
@@ -95,7 +95,7 @@ class ExtBodyContent:
         extbody['xml_wrapped'] = self.xml_wrapped
         extbody['eol'] = self.eol
         extbody['hash'] = self.hash.render_json()
-        return extbody
+        return OrderedDict({k: v for k, v in extbody.items() if v not in CommonMethods.empties})
 
     def _build_dedup(self, children):
         """

@@ -6,6 +6,7 @@
 ##############################################################
 from lxml.ElementInclude import etree
 from xml_help import CommonMethods
+from collections import OrderedDict
 
 
 
@@ -40,8 +41,8 @@ class IntBodyContent:
             return CommonMethods.CommonMethods.cdata_unwrap(self.content)
 
     def render_json(self):
-        intbcont = {}
+        intbcont = OrderedDict()
         intbcont['content'] = self._get_content()
         intbcont['charset'] = self.char_set
         intbcont['transfer_encoding'] = self.transfer_encoding
-        return intbcont
+        return OrderedDict({k: v for k, v in intbcont.items() if v not in CommonMethods.CommonMethods.empties})

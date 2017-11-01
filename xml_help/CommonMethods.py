@@ -257,12 +257,12 @@ class CommonMethods:
     @staticmethod
     def get_hash(message):
         '''
-        Defaulting to SHA1 in this version of the tool.  Future versions give options.
+        Defaulting to SHA256 in this version of the tool.  Future versions give options.
         :return:
         '''
-        hsh = hashlib.sha1()
+        hsh = hashlib.md5()
         hsh.update(CommonMethods.sanitize(message))
-        return Hash(hsh.hexdigest(), restrict.SHA1)
+        return Hash(hsh.hexdigest(), restrict.MD5)
 
     @staticmethod
     def set_base_path(path):

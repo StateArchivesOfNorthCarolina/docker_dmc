@@ -22,7 +22,7 @@ output of DarcMailCLI will be.
 * json
 
 # Basic Usage
-DarcMailCLI.py -a [Name of Account] -d [Path to the MBOX structure] 
+DarcMailCLI.py -a [Name of Account] -d [Path to the MBOX or EML structure] 
                 
 DarcMailCLI.py -a 'GovernorPerdue' -d 'C:\\Repository\\Perdue\\'
 

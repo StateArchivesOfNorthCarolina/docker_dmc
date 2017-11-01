@@ -174,7 +174,7 @@ class MultiBody:
         return []
 
     def render_json(self):
-        mbody = {}
+        mbody = OrderedDict()
         mbody['content_type'] = self._get_content_type()
         mbody['charset'] = self._get_charset()
         mbody['content_name'] = self._get_content_name()
@@ -193,4 +193,4 @@ class MultiBody:
         mbody['other_mime_header'] = self._get_other_mime_header()
         mbody['single_body_content'] = self._get_single_bodies()
         mbody['multi_body_content'] = self._get_multibodies()
-        return mbody
+        return OrderedDict({k: v for k, v in mbody.items() if v not in CommonMethods.empties})
