@@ -5,17 +5,18 @@
 # Description:
 ##############################################################
 import os
-from eaxs.MessageType import DmMessage
-from xml_help.CommonMethods import CommonMethods
 import mailbox
-from eaxs.Account import Account
-from eaxs.FolderType import Folder
 import logging
 import re
 import email
 import gc
-from email.message import Message
 import json
+from email.message import Message
+
+from .. eaxs.MessageType import DmMessage
+from .. xml_help.CommonMethods import CommonMethods
+from .. eaxs.Account import Account
+from .. eaxs.FolderType import Folder
 
 
 class MboxWalker:

@@ -14,9 +14,9 @@ import argparse
 import logging
 import logging.config
 import yaml
-from dir_walker import MboxWalker
-from dir_walker.EmlWalker import EmlWalker
-from xml_help.CommonMethods import CommonMethods
+from . dir_walker import MboxWalker
+from . dir_walker.EmlWalker import EmlWalker
+from . xml_help.CommonMethods import CommonMethods
 from timeit import default_timer as timer
 import sys
 

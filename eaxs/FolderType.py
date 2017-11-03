@@ -6,10 +6,10 @@
 ##############################################################
 
 import os
-from eaxs.MessageType import DmMessage
+from .. eaxs.MessageType import DmMessage
 from lxml.ElementInclude import etree
 from collections import OrderedDict
-from xml_help.CommonMethods import CommonMethods
+from .. xml_help.CommonMethods import CommonMethods
 
 
 class Folder:

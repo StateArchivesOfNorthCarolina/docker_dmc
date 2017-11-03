@@ -4,24 +4,21 @@
 #
 # Description: Implements the EAXS message-type
 ##############################################################
-
+import sys
 from collections import OrderedDict
 from email.message import Message
 import email
-import sys
-
-
-import eaxs.eaxs_helpers.Restrictors as restrict
-from eaxs.HashType import Hash
-from eaxs.HeaderType import Header
-from eaxs.IncompleteParseType import IncompleteParse
-from eaxs.MultiBodyType import MultiBody
-from eaxs.SingleBodyType import SingleBody
-from xml_help.CommonMethods import CommonMethods
-from eaxs.eaxs_helpers.MessageProcessor import MessageProcessor as MPros
+import logging
 
 from lxml.ElementInclude import etree
-import logging
+
+from .. eaxs.HashType import Hash
+from .. eaxs.HeaderType import Header
+from .. eaxs.IncompleteParseType import IncompleteParse
+from .. eaxs.MultiBodyType import MultiBody
+from .. eaxs.SingleBodyType import SingleBody
+from .. xml_help.CommonMethods import CommonMethods
+from .. eaxs_helpers.MessageProcessor import MessageProcessor as MPros
 
 status = {'RO': 'Seen',
           'O': 'Unseen',

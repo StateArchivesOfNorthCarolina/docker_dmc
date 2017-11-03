@@ -5,10 +5,10 @@
 # Description:
 ##############################################################
 from email.message import Message
-from eaxs.MultiBodyType import MultiBody
-from eaxs.SingleBodyType import SingleBody
+from .. eaxs.MultiBodyType import MultiBody
+from .. eaxs.SingleBodyType import SingleBody
 import logging
-from eaxs.eaxs_helpers.PayloadProcessor import PayloadProcessor as payprocess
+from . PayloadProcessor import PayloadProcessor as payprocess
 
 
 class MessageProcessor:

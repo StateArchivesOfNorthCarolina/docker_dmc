@@ -4,14 +4,17 @@
 # 
 # Description: implementation of the multibody type
 ##############################################################
-
-from eaxs.SingleBodyType import SingleBody
-from eaxs.HeaderType import Header
-from eaxs.ParameterType import Parameter
-from email.message import Message
-from xml_help.CommonMethods import CommonMethods
-from lxml.ElementInclude import etree
 from collections import OrderedDict
+from email.message import Message
+
+from lxml.ElementInclude import etree
+
+from .. xml_help.CommonMethods import CommonMethods
+from .. eaxs.SingleBodyType import SingleBody
+from .. eaxs.HeaderType import Header
+from .. eaxs.ParameterType import Parameter
+
+
 
 
 class MultiBody:

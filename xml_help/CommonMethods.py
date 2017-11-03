@@ -1,18 +1,21 @@
 import re
-import eaxs.eaxs_helpers.Restrictors as restrict
 import hashlib
-from eaxs.HashType import Hash
-from lxml.ElementInclude import etree
-from collections import OrderedDict
 import logging
+from collections import OrderedDict
+import unicodedata
+
+from lxml.ElementInclude import etree
 import ftfy
 import ftfy.bad_codecs
-import unicodedata
+
+from .. eaxs.HashType import Hash
+from .. eaxs_helpers.Restrictors import restrict
 
 
 global __LOCALID__
 global __ROOTPATH__
 global __RELPATH__
+
 
 __LOCALID__= 0  # type: int
 logger = logging.getLogger("CommonMethods")

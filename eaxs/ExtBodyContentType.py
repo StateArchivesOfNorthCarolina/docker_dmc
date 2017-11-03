@@ -5,11 +5,11 @@
 # Description: Implementation of ExtBodyContentType
 ##############################################################
 
-from eaxs.HashType import Hash
-from xml_help.CommonMethods import CommonMethods
+from .. eaxs.HashType import Hash
+from .. xml_help.CommonMethods import CommonMethods
 import uuid
 import os
-from eaxs.eaxs_helpers.Render import Render
+from .. eaxs_helpers.Render import Render
 from collections import OrderedDict
 import codecs
 from lxml.ElementInclude import etree

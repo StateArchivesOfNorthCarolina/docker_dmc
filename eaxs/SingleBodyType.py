@@ -4,23 +4,25 @@
 # 
 # Description: 
 ##############################################################
-
-from eaxs.HeaderType import Header
-from eaxs.ChildMessageType import ChildMessage
-from eaxs.ParameterType import Parameter
-from eaxs.IntBodyContentType import IntBodyContent
-from eaxs.ExtBodyContentType import ExtBodyContent
-from email.message import Message
-from email.charset import Charset
-from xml_help.CommonMethods import CommonMethods
+import sys
 from urllib.parse import unquote
-import lxml.etree as etree
-from collections import OrderedDict
 import logging
 import re
+from email.message import Message
+from email.charset import Charset
+
+import lxml.etree as etree
+from collections import OrderedDict
 from bs4 import BeautifulSoup as bsoup
-from hurry.filesize import size
-import sys
+
+from .. eaxs.HeaderType import Header
+from .. eaxs.ChildMessageType import ChildMessage
+from .. eaxs.ParameterType import Parameter
+from .. eaxs.IntBodyContentType import IntBodyContent
+from .. eaxs.ExtBodyContentType import ExtBodyContent
+from .. xml_help.CommonMethods import CommonMethods
+
+
 
 
 class SingleBody:

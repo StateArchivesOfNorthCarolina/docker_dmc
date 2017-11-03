@@ -6,18 +6,18 @@
 #              EAXS schema from eml files.  Test data provided
 #              by the Utah State Archives
 ##############################################################
-
 import os
-from eaxs.MessageType import DmMessage
-from xml_help.CommonMethods import CommonMethods
-from eaxs.Account import Account
-from eaxs.FolderType import Folder
 import logging
 import email
 import gc
+import json
 from collections import OrderedDict
 from email.message import Message
-import json
+
+from .. eaxs.MessageType import DmMessage
+from .. xml_help.CommonMethods import CommonMethods
+from .. eaxs.Account import Account
+from .. eaxs.FolderType import Folder
 
 
 class DefaultListOrderedDict(OrderedDict):

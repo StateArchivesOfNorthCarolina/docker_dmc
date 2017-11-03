@@ -7,11 +7,11 @@
 ##############################################################
 
 from lxml.ElementInclude import etree
-from eaxs.FolderType import Folder
+from .. eaxs.FolderType import Folder
 import codecs
 import os
 import logging
-from xml_help.CommonMethods import CommonMethods
+from .. xml_help.CommonMethods import CommonMethods
 
 
 class Account(object):

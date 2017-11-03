@@ -5,7 +5,7 @@
 # Description: Implementation of the int-body-content-type
 ##############################################################
 from lxml.ElementInclude import etree
-from xml_help import CommonMethods
+from .. xml_help import CommonMethods
 from collections import OrderedDict
 
 

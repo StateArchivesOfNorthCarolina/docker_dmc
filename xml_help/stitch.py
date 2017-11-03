@@ -39,9 +39,3 @@ class Stitcher:
 
     def get_id(self):
         return '<GlobalId>{}</GlobalId>\n'.format(self.global_id)
-
-
-
-if __name__ == "__main__":
-    t = Test()
-    t.stitch_account()

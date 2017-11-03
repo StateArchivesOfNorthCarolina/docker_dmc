@@ -4,8 +4,7 @@
 #
 # Description: Implementation of the mbox-type
 ##############################################################
-
-from eaxs.HashType import Hash
+from .. eaxs.HashType import Hash
 
 
 class Mbox:
