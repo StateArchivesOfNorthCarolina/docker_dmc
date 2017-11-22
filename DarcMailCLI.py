@@ -13,9 +13,9 @@ import logging
 import logging.config
 import yaml
 import sys
-from CmdDarcMail.dir_walker.MboxWalker import MboxWalker
-from CmdDarcMail.dir_walker.EmlWalker import EmlWalker
-from CmdDarcMail.xml_help.CommonMethods import CommonMethods
+from dir_walker.MboxWalker import MboxWalker
+from dir_walker.EmlWalker import EmlWalker
+from xml_help.CommonMethods import CommonMethods
 
 
 class DarcMailCLI(object):

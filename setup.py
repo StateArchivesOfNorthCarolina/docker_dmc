@@ -3,8 +3,8 @@ from distutils.core import setup
 setup(
     name='docker_dmc',
     version='0.0.1',
-    packages=['CmdDarcMail', 'CmdDarcMail.eaxs', 'CmdDarcMail.xml_help', 'CmdDarcMail.eaxs_json',
-              'CmdDarcMail.dir_walker', 'CmdDarcMail.eaxs_helpers'],
+    packages=['eaxs', 'xml_help', 'eaxs_json',
+              'dir_walker', 'eaxs_helpers'],
     url='',
     license='LICENSE.txt',
     author='Jeremy Gibson',
