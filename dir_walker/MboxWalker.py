@@ -33,7 +33,7 @@ class MboxWalker:
         self.account = Account(account_name, xml_dir)
         self.logger = logging.getLogger("MboxWalker")
         self.total_messages_processed = 0  # type: int
-        self.chunks = 0  # type: int
+        self.chunks = CommonMethods.get_chunksize()  # type: int
         self.tracking_pos = 0  # type: int
         self.messages_in_folder = 0  # type: int
         self.messages_no_start_fldr = 0  # type: int
@@ -131,19 +131,22 @@ class MboxWalker:
                             # Render the folder and reopen
                             self._fldr_render_reopen(path)
                             self.chunks = 0
-                        self._transform_buffer(buff, path)
+                        self._transform_buffer(buff, path, fh.tell())
                         buff = []
                 buff.append(line)
 
-    def _transform_buffer(self, buff, path):
+    def _transform_buffer(self, buff, path, file_loc):
         try:
             mes = email.message_from_bytes(b''.join(buff))  # type: Message
-            self.logger.info("Processing Message-ID {}".format(mes.get("Message-ID")))
+            if mes.get("Message-ID") == "":
+                self.logger.info("Missing Message-ID")
+            self.logger.info("Processing Message-ID {} at {}".format(mes.get("Message-ID"), str(file_loc)))
             self._process_message(mes, path)
             self.total_messages_processed += 1
             self.chunks += 1
-        except MemoryError as me:
-            print()
+        except MemoryError:
+            self.logger.info("Memory Error: {}".format("Process has run out of memory. Consider chunking or using fewer"
+                                                       "chunks."))
 
     def _process_message(self, mes, path):
         e_msg = DmMessage(self.get_rel_path(path), CommonMethods.increment_local_id(), mes)

@@ -15,11 +15,11 @@ import lxml.etree as etree
 from collections import OrderedDict
 from bs4 import BeautifulSoup as bsoup
 
-from .. eaxs.HeaderType import Header
-from .. eaxs.ChildMessageType import ChildMessage
-from .. eaxs.ParameterType import Parameter
-from .. eaxs.IntBodyContentType import IntBodyContent
-from .. eaxs.ExtBodyContentType import ExtBodyContent
+from . HeaderType import Header
+from . ChildMessageType import ChildMessage
+from . ParameterType import Parameter
+from . IntBodyContentType import IntBodyContent
+from . ExtBodyContentType import ExtBodyContent
 from .. xml_help.CommonMethods import CommonMethods
 
 
@@ -154,6 +154,7 @@ class SingleBody:
         extbody = ExtBodyContent()
         extbody.char_set = self.charset
         extbody.local_id = CommonMethods.increment_local_id()
+        extbody.gid = "{0:0>5}_{1}".format(extbody.local_id, extbody.gid)
         extbody.transfer_encoding = self.transfer_encoding
         extbody.eol = CommonMethods.get_eol(self.payload.get_payload())
         extbody.hash = CommonMethods.get_hash(self.payload.as_bytes())
@@ -197,7 +198,6 @@ class SingleBody:
             # This is probably not a plaintext payload. Punt to external body.
             self._full_ext_body()
             return
-
         try:
             sbint = IntBodyContent(CommonMethods.cdata_wrap(t), self.transfer_encoding, self.charset)
             if sbint.content == '' or sbint is None:

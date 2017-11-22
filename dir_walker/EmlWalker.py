@@ -87,12 +87,12 @@ class EmlWalker:
     def _transform_buffer(self, buff, path):
         try:
             mes = email.message_from_bytes(b''.join(buff))  # type: Message
-            self.logger.info("Processing Message-ID {}".format(mes.get("Message-ID")))
+            self.logger.info("Processing Message: {}".format(path))
             self._process_message(mes, path)
             self.total_messages_processed += 1
             self.chunks += 1
         except MemoryError as me:
-            print()
+            self.logger.error("Process has run out of memory. Consider reducing the number of chunks")
 
     def _process_message(self, mes, path):
         e_msg = DmMessage(self.get_rel_path(path), CommonMethods.increment_local_id(), mes)

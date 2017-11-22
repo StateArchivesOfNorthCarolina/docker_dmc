@@ -10,9 +10,9 @@ from email.message import Message
 from lxml.ElementInclude import etree
 
 from .. xml_help.CommonMethods import CommonMethods
-from .. eaxs.SingleBodyType import SingleBody
-from .. eaxs.HeaderType import Header
-from .. eaxs.ParameterType import Parameter
+from . SingleBodyType import SingleBody
+from . HeaderType import Header
+from . ParameterType import Parameter
 
 
 

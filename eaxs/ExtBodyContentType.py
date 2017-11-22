@@ -4,16 +4,17 @@
 #
 # Description: Implementation of ExtBodyContentType
 ##############################################################
-
-from .. eaxs.HashType import Hash
-from .. xml_help.CommonMethods import CommonMethods
 import uuid
 import os
-from .. eaxs_helpers.Render import Render
-from collections import OrderedDict
 import codecs
-from lxml.ElementInclude import etree
 import logging
+from collections import OrderedDict
+
+from lxml.ElementInclude import etree
+
+from . HashType import Hash
+from .. eaxs_helpers.Render import Render
+from .. xml_help.CommonMethods import CommonMethods
 
 
 class ExtBodyContent:
@@ -40,8 +41,8 @@ class ExtBodyContent:
     def write_ext_body(self, xml):
         if self.xml_wrapped:
             try:
-                fn = '{}{}'.format(self.gid, '.xml')
-                self.rel_path = ".{}\{}".format(CommonMethods.get_rel_attachment_dir(), fn)
+                fn = '{}.xml'.format(self.gid)
+                self.rel_path = ".{}".format(os.path.join(CommonMethods.get_rel_attachment_dir(), fn))
                 fh = codecs.open(os.path.join(self.attachment_directory, fn), "w", "utf-8")
                 fh.write(xml)
                 fh.close()

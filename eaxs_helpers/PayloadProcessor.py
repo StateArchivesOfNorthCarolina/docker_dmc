@@ -6,6 +6,7 @@
 #              singlebodies and multibodies
 ##############################################################
 from email.message import Message
+
 from .. eaxs.SingleBodyType import SingleBody as SB
 
 

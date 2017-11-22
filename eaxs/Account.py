@@ -5,13 +5,14 @@
 # Description: The parent for the xml representation of a an
 # account.  Based on the E-Mail Account XML Schema
 ##############################################################
-
-from lxml.ElementInclude import etree
-from .. eaxs.FolderType import Folder
 import codecs
 import os
 import logging
+
+from lxml.ElementInclude import etree
+
 from .. xml_help.CommonMethods import CommonMethods
+from .. eaxs.FolderType import Folder
 
 
 class Account(object):

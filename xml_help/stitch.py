@@ -3,7 +3,6 @@ from collections import OrderedDict
 
 
 class Stitcher:
-
     def __init__(self, xml_path, gid):
         self.xml_loc = xml_path
         self.global_id = gid

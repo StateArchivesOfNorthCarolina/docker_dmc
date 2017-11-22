@@ -71,7 +71,6 @@ _timezones = {'UT':0, 'UTC':0, 'GMT':0, 'Z':0,
               }
 
 
-
 class CommonMethods:
     globals()["__STITCH__"] = False
     globals()["__STOREJSON__"] = False
@@ -83,7 +82,11 @@ class CommonMethods:
 
     @staticmethod
     def set_chunk_size(size=None):
-        globals()["__CHUNKS__"] = size
+        try:
+            assert type(size) == int
+            globals()["__CHUNKS__"] = size
+        except AssertionError:
+            globals()["__CHUNKS__"] = int(size)
 
     @staticmethod
     def get_chunksize():
@@ -253,11 +256,15 @@ class CommonMethods:
 
         if re.search(';', content_type) is not None:
             # has a secondary component
+            mime = []
             try:
                 mime = content_type.split(";")
                 key, value = re.split("=", mime[1], maxsplit=1)
             except ValueError as ve:
-                raise
+                if mime[1] == "":
+                    return [content_type]
+                else:
+                    raise
             return [mime[0], key.strip(), value.strip("\"")]
         else:
             # is only a mime type

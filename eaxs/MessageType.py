@@ -12,11 +12,11 @@ import logging
 
 from lxml.ElementInclude import etree
 
-from .. eaxs.HashType import Hash
-from .. eaxs.HeaderType import Header
-from .. eaxs.IncompleteParseType import IncompleteParse
-from .. eaxs.MultiBodyType import MultiBody
-from .. eaxs.SingleBodyType import SingleBody
+from . HashType import Hash
+from . HeaderType import Header
+from . IncompleteParseType import IncompleteParse
+from . MultiBodyType import MultiBody
+from . SingleBodyType import SingleBody
 from .. xml_help.CommonMethods import CommonMethods
 from .. eaxs_helpers.MessageProcessor import MessageProcessor as MPros
 

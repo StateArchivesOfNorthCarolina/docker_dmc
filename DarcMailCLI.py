@@ -12,9 +12,10 @@ import argparse
 import logging
 import logging.config
 import yaml
-from . dir_walker.MboxWalker import MboxWalker
-from . dir_walker.EmlWalker import EmlWalker
-from . xml_help.CommonMethods import CommonMethods
+import sys
+from CmdDarcMail.dir_walker.MboxWalker import MboxWalker
+from CmdDarcMail.dir_walker.EmlWalker import EmlWalker
+from CmdDarcMail.xml_help.CommonMethods import CommonMethods
 
 
 class DarcMailCLI(object):
@@ -27,7 +28,7 @@ class DarcMailCLI(object):
     LOG_NAME = 'dm_xml.log.txt'
 
     def __init__(self,
-                 is_main=None,
+                 is_main=1,
                  base_directory=None,
                  account_directory=None,
                  account_name=None,
@@ -42,9 +43,7 @@ class DarcMailCLI(object):
         self.folder_name = None
         self.folder_path = None
         self.chunksize = chunksize
-        print(self.chunksize)
         self.stitch = stitch
-        print(self.stitch)
         self.levels = self.LEVELS
         self.max_internal = self.NO_LIMIT
         self.xml_wrap = self.XML_WRAP
@@ -65,9 +64,10 @@ class DarcMailCLI(object):
         if self.is_main is None:
             self._arg_parse()
         else:
-            self._set_vars()
-            self._build_paths()
-            self._set_chunksize()
+            # self._set_vars()
+            # self._build_paths()
+            # self._set_chunksize()
+            self._arg_parse()
         self._load_logger()
         self.logger = logging.getLogger("DarcMailCLI")
 
@@ -143,8 +143,9 @@ class DarcMailCLI(object):
 
     def _set_chunksize(self):
         if self.chunksize is not None:
+            print("Setting Stitch to True and Chunksize to {}".format(self.chunksize))
             CommonMethods.set_chunk_size(self.chunksize)
-            CommonMethods.set_stitch(self.stitch)
+            CommonMethods.set_stitch(True)
 
     def _arg_parse(self):
         parser = argparse.ArgumentParser(description='Convert mbox into XML.')
@@ -188,7 +189,10 @@ class DarcMailCLI(object):
 
         args = parser.parse_args()
         argdict = vars(args)
+
         config = yaml.safe_load(open(os.path.join(os.getcwd(), 'config.yml'), 'r'))
+        CommonMethods.set_base_path(config['tomes_dir'])
+
         self.account_name = argdict['account_name'].strip()
         self.account_directory = os.path.normpath(os.path.abspath(argdict['account_directory'].strip()))
 
@@ -197,7 +201,7 @@ class DarcMailCLI(object):
         CommonMethods.set_store_rtf_body(False)
         CommonMethods.init_hash_dict()
         CommonMethods.set_dedupe()
-        CommonMethods.set_base_path(config['tomes_dir'])
+
         self.eaxs = os.path.join(CommonMethods.get_base_path(), 'eaxs')
         self.mboxes = os.path.join(CommonMethods.get_base_path(), 'eaxs')
         self.emls = os.path.join(CommonMethods.get_base_path(), 'emls')
@@ -377,3 +381,16 @@ class BuildEmlDarcmail(object):
         self.xml_dir = darcmail.xml_dir
         emwalk = EmlWalker(self.account_directory, self.xml_dir, self.account_name)
         emwalk.do_walk()
+
+
+if __name__ == "__main__":
+    dmcli = DarcMailCLI()
+    if dmcli.eml_struct:
+        beml = BuildEmlDarcmail(dmcli)
+        exit()
+
+    if dmcli.validate():
+        dmcli.convert()
+
+    else:
+        print("Invalid Folder Structure")

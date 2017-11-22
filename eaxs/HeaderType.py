@@ -4,10 +4,11 @@
 #
 # Description: Implementation of EAXS header-type
 ##############################################################
-import re
-from lxml.ElementInclude import etree
-from .. xml_help.CommonMethods import CommonMethods
 from collections import OrderedDict
+
+from lxml.ElementInclude import etree
+
+from .. xml_help.CommonMethods import CommonMethods
 
 
 class Header:
