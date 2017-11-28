@@ -7,7 +7,7 @@
 from lxml.ElementInclude import etree
 from collections import OrderedDict
 
-from .. xml_help import CommonMethods
+from xml_help import CommonMethods
 
 
 

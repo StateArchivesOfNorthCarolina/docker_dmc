@@ -15,12 +15,12 @@ import lxml.etree as etree
 from collections import OrderedDict
 from bs4 import BeautifulSoup as bsoup
 
-from . HeaderType import Header
-from . ChildMessageType import ChildMessage
-from . ParameterType import Parameter
-from . IntBodyContentType import IntBodyContent
-from . ExtBodyContentType import ExtBodyContent
-from .. xml_help.CommonMethods import CommonMethods
+from eaxs.HeaderType import Header
+from eaxs.ChildMessageType import ChildMessage
+from eaxs.ParameterType import Parameter
+from eaxs.IntBodyContentType import IntBodyContent
+from eaxs.ExtBodyContentType import ExtBodyContent
+from xml_help.CommonMethods import CommonMethods
 
 
 
