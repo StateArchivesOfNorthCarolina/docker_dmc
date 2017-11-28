@@ -190,8 +190,7 @@ class DarcMailCLI(object):
         args = parser.parse_args()
         argdict = vars(args)
 
-        config = yaml.safe_load(open(os.path.join(os.getcwd(), 'config.yml'), 'r'))
-        CommonMethods.set_base_path(config['tomes_dir'])
+        CommonMethods.set_base_path(os.environ["TOMES_HOME"])
 
         self.account_name = argdict['account_name'].strip()
         self.account_directory = os.path.normpath(os.path.abspath(argdict['account_directory'].strip()))
