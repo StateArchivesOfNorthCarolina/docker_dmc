@@ -190,7 +190,7 @@ class DarcMailCLI(object):
         args = parser.parse_args()
         argdict = vars(args)
 
-        CommonMethods.set_base_path(os.environ["TOMES_HOME"])
+        CommonMethods.set_base_path('/home/tomes/data')
 
         self.account_name = argdict['account_name'].strip()
         self.account_directory = os.path.normpath(os.path.abspath(argdict['account_directory'].strip()))
@@ -380,6 +380,7 @@ class BuildEmlDarcmail(object):
         self.account_name = darcmail.account_name
         self.xml_dir = darcmail.xml_dir
         emwalk = EmlWalker(self.account_directory, self.xml_dir, self.account_name)
+        self.logger.info("XML dir is {}".format(self.xml_dir))
         self.logger.info("Processing {} \n to {}".format(self.account_directory, self.xml_dir))
         emwalk.do_walk()
 
