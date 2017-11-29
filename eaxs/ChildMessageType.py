@@ -5,8 +5,8 @@
 # Description: Implementation of the ChildMessageType
 ##############################################################
 
-from . MessageIdType import MessageId
-from . HeaderType import Header
+from eaxs.MessageIdType import MessageId
+from eaxs.HeaderType import Header
 
 class ChildMessage:
     """"""

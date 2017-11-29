@@ -8,7 +8,7 @@ from lxml.ElementInclude import etree
 import ftfy
 import ftfy.bad_codecs
 
-from .. eaxs.HashType import Hash
+from eaxs.HashType import Hash
 
 
 global __LOCALID__

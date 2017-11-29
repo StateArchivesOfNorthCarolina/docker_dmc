@@ -12,9 +12,9 @@ from collections import OrderedDict
 
 from lxml.ElementInclude import etree
 
-from . HashType import Hash
-from .. eaxs_helpers.Render import Render
-from .. xml_help.CommonMethods import CommonMethods
+from eaxs.HashType import Hash
+from eaxs_helpers.Render import Render
+from xml_help.CommonMethods import CommonMethods
 
 
 class ExtBodyContent:
