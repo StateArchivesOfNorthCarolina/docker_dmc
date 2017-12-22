@@ -13,7 +13,7 @@ from email.charset import Charset
 
 import lxml.etree as etree
 from collections import OrderedDict
-from bs4 import BeautifulSoup as bsoup
+
 
 from eaxs.HeaderType import Header
 from eaxs.ChildMessageType import ChildMessage
@@ -135,7 +135,7 @@ class SingleBody:
                 self._process_plaintext_body()
             else:
                 try:
-                    intbody = IntBodyContent(CommonMethods.cdata_wrap(self.body_content),
+                    intbody = IntBodyContent(self.body_content,
                                              self.transfer_encoding, self.charset)
                     if intbody.content is None:
                         return
@@ -188,10 +188,10 @@ class SingleBody:
     def _process_plaintext_body(self):
         t = ""
         if isinstance(self.payload, Message):
-            t = re.sub("\[\[", "\\[\\[", self._soupify(self.payload.get_payload()))
+            t = re.sub("\[\[", "\\[\\[", self.payload.get_payload())
             t = re.sub("]]", "\]\]", t)
         elif isinstance(self.payload, str):
-            t = re.sub("\[\[", "\\[\\[", self._soupify(self.payload))
+            t = re.sub("\[\[", "\\[\\[", self.payload)
             t = re.sub("]]", "\]\]", t)
         s = sys.getsizeof(t)
         if s > (1024 ** 2):
@@ -245,14 +245,6 @@ class SingleBody:
             return False
         return False
 
-    def _soupify(self, body):
-        if not self.soupify:
-            return body
-        soup = bsoup(body, "lxml")
-        for script in soup(["script", "style"]):
-            script.extract()
-        text = soup.get_text()
-        return text
 
     def render(self, parent):
         """

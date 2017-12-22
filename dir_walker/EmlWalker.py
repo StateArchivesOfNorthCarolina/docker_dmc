@@ -42,15 +42,28 @@ class EmlWalker:
         self.account.write_global_id()
         self.chunks = 0
         self.new_account = True
-        if CommonMethods.get_store_json():
-            self.json_write = CommonMethods.get_json_directory()
+        self.from_tomes = CommonMethods.get_tomes_tool()
+        self.data_dir = os.path.join(CommonMethods.get_process_paths(), "mboxes")
+        self.folder_map = {}
+        self.expanded_path = str
+        self.new_dir = True
+        self.cur_fn = str
 
     def do_walk(self):
+        # If this is a TOMES_TOOL Struct use the folder_map
+        if self.from_tomes:
+            self.account_directory = os.path.join(self.data_dir, self.account_name)
+            with open(os.path.join(self.account_directory, "folder_map.tsv")) as fh:
+                for line in fh.readlines():
+                    s = line.strip().split("\t")
+                    self.folder_map[s[0]] = s[1]
+        print("Scanning data structure for emails.")
         for root, dirs, files in os.walk(self.account_directory):
             for f in files:
                 if root not in self.message_pack:
                     self.message_pack[root] = []
-                self.message_pack[root].append(f)
+                if f.endswith("eml"):
+                    self.message_pack[root].append(f)
         self.process_folders()
 
     def process_folders(self):
@@ -61,6 +74,7 @@ class EmlWalker:
                     # Render the folder and reopen
                     self._fldr_render_reopen(path)
                     self.chunks = 0
+                self.cur_fn = f
                 self.message_generator(os.path.join(path, f))
             self._fldr_render(path)
         self.account.close_account()
@@ -79,7 +93,7 @@ class EmlWalker:
             mes = email.message_from_binary_file(fh)
         try:
             self.logger.info("Processing Message-ID {}".format(mes.get("Message-ID")))
-            self._process_message(mes, path)
+            self._process_message(mes)
             self.total_messages_processed += 1
             self.chunks += 1
         except MemoryError as me:
@@ -90,10 +104,18 @@ class EmlWalker:
     def _transform_buffer(self, buff, path):
         pass
 
-    def _process_message(self, mes, path):
-        e_msg = DmMessage(self.current_relpath, CommonMethods.increment_local_id(), mes)
+    def _process_message(self, mes):
+        e_msg = DmMessage(self.expand_path_from_map(self.current_relpath), CommonMethods.increment_local_id(), mes,
+                          self.cur_fn)
         e_msg.message = None
         self.messages.append(e_msg)
+
+    def expand_path_from_map(self, cur_relpath: str):
+        if self.new_dir:
+            s = cur_relpath.split(os.path.sep)
+            self.expanded_path = self.folder_map[s[-1]]
+            self.new_dir = False
+        return self.expanded_path
 
     def get_rel_path(self, path):
         if self.account_directory == path:
@@ -103,6 +125,7 @@ class EmlWalker:
         start = len(self.account_directory.split(os.path.sep))
         end = len(path.split(os.path.sep))
         group = path.split(os.path.sep)[start:end]
+        self.new_dir = True
         return os.path.join('.', os.path.sep.join(group))
 
     def _set_current_relpath(self, path):
