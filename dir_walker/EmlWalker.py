@@ -70,8 +70,6 @@ class EmlWalker:
         for path, files in self.message_pack.items():
             self.current_relpath = self.get_rel_path(path)
             for f in files:
-                if f == "2126948.eml":
-                    print()
                 if CommonMethods.get_chunksize() != 0 and CommonMethods.get_chunksize() == self.chunks:
                     # Render the folder and reopen
                     self._fldr_render_reopen(path)
@@ -140,16 +138,14 @@ class EmlWalker:
             self.current_folder = path
 
     def _fldr_render(self, path):
+        if len(self.messages) == 0:
+            return
+        s = self.expanded_path.split(os.path.sep)
         fldr = Folder(self.current_relpath, path)
+        if len(s) > 1:
+            fldr.name = s[-1]
         fldr.messages = self.messages
         fldr.render()
-        if CommonMethods.get_store_json():
-            fh = open(os.path.join(self.json_write, self.account_name + ".json"), 'a', encoding='utf-8')
-            fh.write(',')
-            jsn = fldr.render_json()
-            json.dump(jsn, fh, sort_keys=False, indent=4)
-            # json.dump(jsn, fh)
-            fh.close()
         self.logger.info('Wrote folder of size {} bytes'.format(fldr.mbox_size))
         self.logger.info('Messages processed: {}'.format(self.total_messages_processed))
         fldr = None
