@@ -153,7 +153,7 @@ class DarcMailCLI(object):
         parser.add_argument('--directory', '-d', dest='account_directory',
                             help='directory to hold all files for this account')
 
-        parser.add_argument('--chunk', '-c', dest='chunk', type=int,
+        parser.add_argument('--chunk', '-c', dest='chunk',
                             default=self.NO_CHUNK,
                             help='An approximate number of messages to put in one output XML file. '
                                  'NOTE: This this will be approximate because '
@@ -185,6 +185,8 @@ class DarcMailCLI(object):
 
         args = parser.parse_args()
         argdict = vars(args)
+        for k, v in argdict.items():
+            print("{}:{}".format(k, v))
 
         CommonMethods.set_base_path(CommonMethods.get_process_paths())
 
@@ -224,9 +226,9 @@ class DarcMailCLI(object):
         else:
             self._data_dir()
 
-        if 'chunk' in argdict.keys():
+        if argdict['chunk']:
             self.chunksize = argdict['chunk']
-            CommonMethods.set_chunk_size(self.chunksize)
+            CommonMethods.set_chunk_size(1000)
             CommonMethods.set_stitch(argdict['stitch'])
 
     def validate(self):
@@ -389,9 +391,8 @@ class BuildEmlDarcmail(object):
 
 
 if __name__ == "__main__":
-    CommonMethods.set_devel(True)
+    CommonMethods.set_devel(False)
     dmcli = DarcMailCLI()
-
 
     if dmcli.eml_struct:
         CommonMethods.set_package_type(CommonMethods.PACK_TYPE_EML)

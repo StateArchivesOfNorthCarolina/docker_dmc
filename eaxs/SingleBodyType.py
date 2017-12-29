@@ -23,8 +23,6 @@ from eaxs.ExtBodyContentType import ExtBodyContent
 from xml_help.CommonMethods import CommonMethods
 
 
-
-
 class SingleBody:
     """
 

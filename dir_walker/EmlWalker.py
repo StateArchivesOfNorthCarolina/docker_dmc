@@ -70,6 +70,8 @@ class EmlWalker:
         for path, files in self.message_pack.items():
             self.current_relpath = self.get_rel_path(path)
             for f in files:
+                if f == "2126948.eml":
+                    print()
                 if CommonMethods.get_chunksize() != 0 and CommonMethods.get_chunksize() == self.chunks:
                     # Render the folder and reopen
                     self._fldr_render_reopen(path)
