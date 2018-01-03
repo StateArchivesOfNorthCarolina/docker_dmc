@@ -5,6 +5,7 @@ from collections import OrderedDict
 import unicodedata
 
 from lxml.ElementInclude import etree
+from lxml.etree import CDATA
 import ftfy
 import ftfy.bad_codecs
 
@@ -75,6 +76,37 @@ class CommonMethods:
     globals()["__STITCH__"] = False
     globals()["__STOREJSON__"] = False
     empties = ['', None, []]
+    PACK_TYPE_MBOX = 0
+    PACK_TYPE_EML = 1
+
+    @staticmethod
+    def set_devel(d: bool):
+        globals()["__DEVEL__"] = d
+
+    @staticmethod
+    def get_process_paths():
+        if globals()["__DEVEL__"]:
+            return "E:\\RESOURCES\\TEST_RESOURCES\\tomes\\data"
+        else:
+            return "/home/tomes/data"
+
+    @staticmethod
+    def set_from_tomes(tt: bool):
+        globals()["__TOMES_TOOL__"] = tt
+
+    @staticmethod
+    def get_tomes_tool():
+        return globals()["__TOMES_TOOL__"]
+
+    @staticmethod
+    def set_package_type(pt: int):
+        globals()["__PACK_TYPE__"] = pt
+
+    @staticmethod
+    def is_eml_struct() -> bool:
+        if globals()["__PACK_TYPE__"] == CommonMethods.PACK_TYPE_EML:
+            return True
+        return False
 
     @staticmethod
     def init_hash_dict():
@@ -192,7 +224,7 @@ class CommonMethods:
 
         try:
             if re.search("[<>\'\"]", text) is not None:
-                return etree.CDATA(CommonMethods.remove_control_chars(text))
+                return CDATA(text)
                 pass
             return text
         except ValueError as ve:

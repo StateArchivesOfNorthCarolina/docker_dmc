@@ -42,15 +42,28 @@ class EmlWalker:
         self.account.write_global_id()
         self.chunks = 0
         self.new_account = True
-        if CommonMethods.get_store_json():
-            self.json_write = CommonMethods.get_json_directory()
+        self.from_tomes = CommonMethods.get_tomes_tool()
+        self.data_dir = os.path.join(CommonMethods.get_process_paths(), "mboxes")
+        self.folder_map = {}
+        self.expanded_path = str
+        self.new_dir = True
+        self.cur_fn = str
 
     def do_walk(self):
+        # If this is a TOMES_TOOL Struct use the folder_map
+        if self.from_tomes:
+            self.account_directory = os.path.join(self.data_dir, self.account_name)
+            with open(os.path.join(self.account_directory, "folder_map.tsv")) as fh:
+                for line in fh.readlines():
+                    s = line.strip().split("\t")
+                    self.folder_map[s[0]] = s[1]
+        print("Scanning data structure for emails.")
         for root, dirs, files in os.walk(self.account_directory):
             for f in files:
                 if root not in self.message_pack:
                     self.message_pack[root] = []
-                self.message_pack[root].append(f)
+                if f.endswith("eml"):
+                    self.message_pack[root].append(f)
         self.process_folders()
 
     def process_folders(self):
@@ -61,6 +74,7 @@ class EmlWalker:
                     # Render the folder and reopen
                     self._fldr_render_reopen(path)
                     self.chunks = 0
+                self.cur_fn = f
                 self.message_generator(os.path.join(path, f))
             self._fldr_render(path)
         self.account.close_account()
@@ -74,38 +88,45 @@ class EmlWalker:
         :param path:
         :return:
         """
-        buff = []
+        mes = None
         with open(path, 'rb') as fh:
-            # Open the eml found at path
-            for line in fh.readlines():
-                line = CommonMethods.sanitize(line)
-                line = line.replace(b'\r\n', b'\n')
-                buff.append(line)
-        self._transform_buffer(buff, path)
-        buff = None
-
-    def _transform_buffer(self, buff, path):
+            mes = email.message_from_binary_file(fh)
         try:
-            mes = email.message_from_bytes(b''.join(buff))  # type: Message
-            self.logger.info("Processing Message: {}".format(path))
-            self._process_message(mes, path)
+            self.logger.info("Processing Message-ID {}".format(mes.get("Message-ID")))
+            self._process_message(mes)
             self.total_messages_processed += 1
             self.chunks += 1
         except MemoryError as me:
-            self.logger.error("Process has run out of memory. Consider reducing the number of chunks")
+            # TODO: Write to a file or error log with file_id or message id
+            raise MemoryError
+        mes = None
 
-    def _process_message(self, mes, path):
-        e_msg = DmMessage(self.get_rel_path(path), CommonMethods.increment_local_id(), mes)
+    def _transform_buffer(self, buff, path):
+        pass
+
+    def _process_message(self, mes):
+        e_msg = DmMessage(self.expand_path_from_map(self.current_relpath), CommonMethods.increment_local_id(), mes,
+                          self.cur_fn)
         e_msg.message = None
         self.messages.append(e_msg)
+
+    def expand_path_from_map(self, cur_relpath: str):
+        if self.new_dir:
+            s = cur_relpath.split(os.path.sep)
+            self.expanded_path = self.folder_map[s[-1]]
+            self.new_dir = False
+        return self.expanded_path
 
     def get_rel_path(self, path):
         if self.account_directory == path:
             return "."
         common = os.path.commonpath([self.account_directory, path])
         rel = os.path.basename(path)
-        diff = len(self.account_directory.split(os.path.sep)) - len(path.split(os.path.sep))
-        return os.path.join('.', path.split(os.path.sep)[diff])
+        start = len(self.account_directory.split(os.path.sep))
+        end = len(path.split(os.path.sep))
+        group = path.split(os.path.sep)[start:end]
+        self.new_dir = True
+        return os.path.join('.', os.path.sep.join(group))
 
     def _set_current_relpath(self, path):
         if path == self.current_folder:
@@ -117,16 +138,14 @@ class EmlWalker:
             self.current_folder = path
 
     def _fldr_render(self, path):
+        if len(self.messages) == 0:
+            return
+        s = self.expanded_path.split(os.path.sep)
         fldr = Folder(self.current_relpath, path)
+        if len(s) > 1:
+            fldr.name = s[-1]
         fldr.messages = self.messages
         fldr.render()
-        if CommonMethods.get_store_json():
-            fh = open(os.path.join(self.json_write, self.account_name + ".json"), 'a', encoding='utf-8')
-            fh.write(',')
-            jsn = fldr.render_json()
-            json.dump(jsn, fh, sort_keys=False, indent=4)
-            # json.dump(jsn, fh)
-            fh.close()
         self.logger.info('Wrote folder of size {} bytes'.format(fldr.mbox_size))
         self.logger.info('Messages processed: {}'.format(self.total_messages_processed))
         fldr = None

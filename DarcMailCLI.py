@@ -64,9 +64,6 @@ class DarcMailCLI(object):
         if self.is_main is None:
             self._arg_parse()
         else:
-            # self._set_vars()
-            # self._build_paths()
-            # self._set_chunksize()
             self._arg_parse()
         self._load_logger()
         self.logger = logging.getLogger("DarcMailCLI")
@@ -153,10 +150,10 @@ class DarcMailCLI(object):
         parser.add_argument('--account', '-a', dest='account_name', required=True,
                             help='email account name')
 
-        parser.add_argument('--directory', '-d', dest='account_directory', required=True,
+        parser.add_argument('--directory', '-d', dest='account_directory',
                             help='directory to hold all files for this account')
 
-        parser.add_argument('--chunk', '-c', dest='chunk', type=int,
+        parser.add_argument('--chunk', '-c', dest='chunk',
                             default=self.NO_CHUNK,
                             help='An approximate number of messages to put in one output XML file. '
                                  'NOTE: This this will be approximate because '
@@ -183,17 +180,21 @@ class DarcMailCLI(object):
                                  'due to memory errors, but you still want to have a single EAXS file, then chunk the '
                                  'process, which clears memory faster, and stitch will rebuild a single file at the end'
                                  'of the process')
-        # parser.add_argument('--json', '-j', dest='json_out', action='store_true',
-        #                   help='This switch enables the output of json serialized mail.  The structure of the json'
-        #                         'objects mirror the EAXS structure.')
+        parser.add_argument('--tomes_tool', '-tt', dest='tomes_tool', action='store_true',
+                            help='Indicates that the source tree is built from the Dockerized pst_extractor.')
 
         args = parser.parse_args()
         argdict = vars(args)
+        for k, v in argdict.items():
+            print("{}:{}".format(k, v))
 
-        CommonMethods.set_base_path('/home/tomes/data')
+        CommonMethods.set_base_path(CommonMethods.get_process_paths())
 
         self.account_name = argdict['account_name'].strip()
-        self.account_directory = os.path.normpath(os.path.abspath(argdict['account_directory'].strip()))
+        self.account_directory = os.path.join(CommonMethods.get_base_path(), 'mboxes')
+        if argdict['account_directory']:
+            self.account_directory = os.path.normpath(os.path.abspath(argdict['account_directory'].strip()))
+
 
         # Initialize common features and common attributes
 
@@ -209,6 +210,10 @@ class DarcMailCLI(object):
         if argdict['from_eml']:
             self.eml_struct = True
 
+        CommonMethods.set_from_tomes(False)
+        if argdict['tomes_tool']:
+            CommonMethods.set_from_tomes(True)
+
         #TODO: Remove this maybe
         if 'max_internal' in argdict.keys():
             self.max_internal = int(argdict['max_internal'])
@@ -221,9 +226,9 @@ class DarcMailCLI(object):
         else:
             self._data_dir()
 
-        if 'chunk' in argdict.keys():
+        if argdict['chunk']:
             self.chunksize = argdict['chunk']
-            CommonMethods.set_chunk_size(self.chunksize)
+            CommonMethods.set_chunk_size(1000)
             CommonMethods.set_stitch(argdict['stitch'])
 
     def validate(self):
@@ -386,11 +391,15 @@ class BuildEmlDarcmail(object):
 
 
 if __name__ == "__main__":
+    CommonMethods.set_devel(True)
     dmcli = DarcMailCLI()
+
     if dmcli.eml_struct:
+        CommonMethods.set_package_type(CommonMethods.PACK_TYPE_EML)
         beml = BuildEmlDarcmail(dmcli)
         exit()
 
+    CommonMethods.set_package_type(CommonMethods.PACK_TYPE_MBOX)
     if dmcli.validate():
         dmcli.convert()
 

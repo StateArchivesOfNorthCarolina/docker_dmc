@@ -30,11 +30,11 @@ status = {'RO': 'Seen',
 class DmMessage:
     """"""
 
-    def __init__(self, rel_path, local_id, message):
+    def __init__(self, rel_path, local_id, message, fn=None):
         """Constructor for Message"""
         self.logger = logging.getLogger("MessageType")
         self.message = message  # type: Message
-
+        self.fn = fn
         # First parts of the schema message-type
         self.relative_path = rel_path  # type: str
         self.local_id = local_id
@@ -97,6 +97,9 @@ class DmMessage:
         self._process_payload()
 
     def _process_headers(self):
+        if self.fn:
+            fake_h = Header("X-TOMES-ID", self.fn)
+            self.headers.append(fake_h)
         for key, value in self.message.items():
             if type(value) is email.header.Header:
                 value = value.__str__()

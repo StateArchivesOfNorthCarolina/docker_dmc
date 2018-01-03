@@ -5,10 +5,10 @@
 # Description: Implementation of the int-body-content-type
 ##############################################################
 from lxml.ElementInclude import etree
+from lxml.etree import CDATA
 from collections import OrderedDict
 
 from xml_help import CommonMethods
-
 
 
 class IntBodyContent:
@@ -19,6 +19,7 @@ class IntBodyContent:
         self.content = content  # type: str
         self.char_set = char_set  # type: str
         self.transfer_encoding = transfer_encoding  # type: str
+
 
     def render(self, parent):
         """

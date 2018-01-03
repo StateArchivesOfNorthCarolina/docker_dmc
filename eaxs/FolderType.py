@@ -18,8 +18,12 @@ class Folder:
 
     def __init__(self, relpath, mbox_path):
         """Constructor for Folder"""
-        self.name = mbox_path.split(os.sep)[-2]  # type: str
-        self.relpath = relpath
+        if CommonMethods.is_eml_struct():
+            self.name = relpath.split(os.path.sep)[-1]
+            self.relpath = relpath
+        else:
+            self.name = mbox_path.split(os.sep)[-2]  # type: str
+            self.relpath = relpath
         self.messages = []  # type: list[DmMessage]
         self.folders = []  # type: list[Folder]
         self.mbox_size = os.path.getsize(mbox_path)
