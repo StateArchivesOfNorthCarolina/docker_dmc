@@ -1,0 +1,76 @@
+From @ Thu Mar 23 08:21:39 2006
+X-Sieve: cmu-sieve 2.0
+Received: from vaogate.cccgt.org ([172.17.5.65]:13829 "EHLO
+        vaogate.staff.cccgt.org" TLS-CIPHER: "EDH-RSA-DES-CBC3-SHA keybits
+        168/168 version TLSv1/SSLv3" TLS-PEER: <none>) by grinder.cccgt.org
+        with ESMTP id <S26867AbWCWNVj>; Thu, 23 Mar 2006 08:21:39 -0500
+Received: from server45.appriver.com ([69.20.58.226]:23817 "EHLO
+        server45.appriver.com" ident: "TIMEDOUT") by vaogate.cccgt.org
+        with ESMTP id S74AbWCWNVO; Thu, 23 Mar 2006 08:21:14 -0500
+Subject: Undeliverable mail: Autoreply: Out of office autoreply
+From:   <MAILER-DAEMON@server45.appriver.com>
+To:     <postmaster@cccgt.org>
+Date:   Thu, 23 Mar 2006 08:21:08 -0500
+Message-ID: <receipt-435665940@server45.appriver.com>
+X-MAPI-Message-Class: REPORT.IPM.Note.NDR
+MIME-Version: 1.0
+Content-Type: multipart/report; report-type="delivery-status"; boundary="_===435665940====server45.appriver.com===_"
+Return-Path: <>
+Content-Length: 2022
+Lines: 54
+
+
+--_===435665940====server45.appriver.com===_
+Content-Type: text/plain; charset="utf-8"
+
+Failed to deliver to 'justin@omnet.com'
+SMTP module(domain [66.207.67.155]) reports:
+ host 66.207.67.155 says:
+ 550 5.1.1 <justin@omnet.com>... User unknown
+
+
+--_===435665940====server45.appriver.com===_
+Content-Type: message/delivery-status
+
+Reporting-MTA: dns; server45.appriver.com
+
+Original-Recipient: rfc822;<justin@omnet.com>
+Final-Recipient: rfc822;<justin@omnet.com>
+Action: failed
+Status: 5.0.0
+
+--_===435665940====server45.appriver.com===_
+Content-Type: text/rfc822-headers
+
+Received: from [10.238.11.34] (HELO inbound.appriver.com)
+  by server45.appriver.com (CommuniGate Pro SMTP 5.0.6)
+  with ESMTP id 435665923 for justin@omnet.com; Thu, 23 Mar 2006 08:21:06 -0500
+Received: by inbound.appriver.com (CommuniGate Pro PIPE 5.0.6)
+  with PIPE id 47958601; Thu, 23 Mar 2006 08:21:06 -0500
+Received: from 66-163-1-120.ip.tor.radiant.net ([66.163.1.120] verified)
+  by inbound.appriver.com (CommuniGate Pro SMTP 5.0.6)
+  with ESMTP id 47958590 for justin@omnet.com; Thu, 23 Mar 2006 08:21:04 -0500
+Received: from grinder.cccgt.org ([172.17.5.25]:34319 "EHLO grinder" ident:
+        "NO-IDENT-SERVICE[2]") by vaogate.cccgt.org with ESMTP id S74AbWCWNU5;
+        Thu, 23 Mar 2006 08:20:57 -0500
+Received: by grinder.cccgt.org id <S26868AbWCWNUo>;
+        Thu, 23 Mar 2006 08:20:44 -0500
+From:   Autoreply service <postmaster@cccgt.org>
+To:     justin@omnet.com
+Subject: Autoreply: Out of office autoreply
+X-autoanswer-loop: Megaloop 
+Message-Id: <20060323132055Z26868-1423+1453@grinder.cccgt.org>
+Date:   Thu, 23 Mar 2006 08:20:44 -0500
+X-Policy: omnet.com
+X-Note: This Email was scanned by AppRiver SecureTide
+X-Warn: MAILFROM No Sender Listed.
+X-Note: Mail Class: VALID
+X-Note: Spam Tests Failed: MAILFROM
+X-Note: User Rule Hits: 
+X-Country-Path: PRIVATE->CANADA->destination
+X-Note-Sending-IP: 66.163.1.120
+X-Note-Reverse-DNS: 66-163-1-120.ip.tor.radiant.net
+X-Note-WHTLIST: 
+
+--_===435665940====server45.appriver.com===_--
+
