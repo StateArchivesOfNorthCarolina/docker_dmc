@@ -1,0 +1,5 @@
+.eml from https://www.phpclasses.org/browse/file/14672.html
+
+.mbox from https://dev.mutt.org/trac/attachment/ticket/2760/340506-sample.mbox.gz
+
+.pst from http://www.file-recovery.com/pst-signature-format.htm
