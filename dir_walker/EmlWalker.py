@@ -113,7 +113,7 @@ class EmlWalker:
     def expand_path_from_map(self, cur_relpath: str):
         if self.new_dir:
             s = cur_relpath.split(os.path.sep)
-            self.expanded_path = self.folder_map[s[-1]]
+            #self.expanded_path = self.folder_map[s[-1]]
             self.new_dir = False
         return self.expanded_path
 
