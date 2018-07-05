@@ -88,7 +88,7 @@ class CommonMethods:
         if globals()["__DEVEL__"]:
             return "E:\\RESOURCES\\TEST_RESOURCES\\tomes\\data"
         else:
-            return "/home/tomes/data"
+            return "OUTPUT"
 
     @staticmethod
     def set_from_tomes(tt: bool):

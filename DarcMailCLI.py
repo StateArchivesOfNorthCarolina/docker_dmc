@@ -78,7 +78,7 @@ class DarcMailCLI(object):
         logging.config.dictConfig(config)
 
     def _build_basic_logger(self):
-        self.logger_template_path = os.path.join(os.getcwd(), 'logger_template.yml')
+        self.logger_template_path = os.path.join(os.getcwd(), 'logger.yaml')
         f = open(self.logger_template_path, 'r')
         yml = yaml.safe_load(f)
         f.close()
@@ -391,7 +391,7 @@ class BuildEmlDarcmail(object):
 
 
 if __name__ == "__main__":
-    CommonMethods.set_devel(True)
+    CommonMethods.set_devel(False)
     dmcli = DarcMailCLI()
 
     if dmcli.eml_struct:
