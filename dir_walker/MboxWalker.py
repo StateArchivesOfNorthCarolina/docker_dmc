@@ -114,7 +114,7 @@ class MboxWalker:
                 if len(line) == 0:
                     # Clunky ass way to find end of file, but whatevs. write the final message and clear
                     # buffer.
-                    self._transform_buffer(buff, path)
+                    self._transform_buffer(buff, path, fh.tell())
                     buff = []
                     break
                 if re.search(b'^From((\s(\"|.+).+\@)|(\s(\".+\")\s))', line):
