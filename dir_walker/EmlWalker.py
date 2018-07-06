@@ -113,7 +113,14 @@ class EmlWalker:
     def expand_path_from_map(self, cur_relpath: str):
         if self.new_dir:
             s = cur_relpath.split(os.path.sep)
-            #self.expanded_path = self.folder_map[s[-1]]
+            #TODO: Nitin here: Looks like we need different return values depending on if
+            # self.from_tomes or not.
+            # So I added the if/else below. Originally, the "if" statement always executed.
+            # I get the feeling this is not the solution though.
+            if self.from_tomes:
+                self.expanded_path = self.folder_map[s[-1]]
+            else:
+                return cur_relpath.replace('/' + s[-1], '')
             self.new_dir = False
         return self.expanded_path
 

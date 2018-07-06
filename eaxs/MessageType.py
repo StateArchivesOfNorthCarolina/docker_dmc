@@ -137,7 +137,8 @@ class DmMessage:
                         self.__getattribute__(key).render(message)
                         continue
                     child = etree.SubElement(message, value)
-                    child.text = str(self.__getattribute__(key))
+                    child.text = self.__getattribute__(key)
+
 
     def _get_message_id(self):
         if isinstance(self.message_id, etree.CDATA):
