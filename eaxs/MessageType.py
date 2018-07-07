@@ -139,7 +139,6 @@ class DmMessage:
                     child = etree.SubElement(message, value)
                     child.text = self.__getattribute__(key)
 
-
     def _get_message_id(self):
         if isinstance(self.message_id, etree.CDATA):
             return CommonMethods.cdata_unwrap(self.message_id)

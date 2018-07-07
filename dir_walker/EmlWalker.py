@@ -120,7 +120,7 @@ class EmlWalker:
             if self.from_tomes:
                 self.expanded_path = self.folder_map[s[-1]]
             else:
-                return cur_relpath.replace('/' + s[-1], '')
+                return cur_relpath
             self.new_dir = False
         return self.expanded_path
 
