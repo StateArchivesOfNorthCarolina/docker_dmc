@@ -145,7 +145,8 @@ class DarcMailCLI(object):
             CommonMethods.set_stitch(True)
 
     def _arg_parse(self):
-        parser = argparse.ArgumentParser(description='Convert mbox into XML.')
+        parser = argparse.ArgumentParser(description='Converts mbox|eml to EAXS.\nExample: `python3 DarcMailCLI.py -a sample_mbox -d tests/sample_files/mbox`',
+		formatter_class=argparse.RawDescriptionHelpFormatter)
 
         parser.add_argument('--account', '-a', dest='account_name', required=True,
                             help='email account name')
@@ -390,7 +391,7 @@ class BuildEmlDarcmail(object):
         emwalk.do_walk()
 
 
-if __name__ == "__main__":
+def main():
     CommonMethods.set_devel(False)
     dmcli = DarcMailCLI()
 
@@ -405,3 +406,11 @@ if __name__ == "__main__":
 
     else:
         print("Invalid Folder Structure")
+
+if __name__ == "__main__":
+    try:
+        main()
+        sys.exit()
+    except Exception as err:
+        err = "{}: {}".format(err.__class__.__name__, err)
+        sys.exit(err)
