@@ -31,15 +31,22 @@ def MAKE_DIRNAME():
 
 # function to run DarcMailCLI.
 def RUN_DARCMAIL(dirname, source, eml=False):
-    cmd = "./DarcMailCLI.py -a {} -d {} -c 100 -st".format(dirname, source)
+    
+    # add "./" before the command if not Windows.
+    slash = ""
+    if os.name != "nt":
+        slash = "./"
+
+    # construct the command; run it.
+    cmd = "{}DarcMailCLI.py -a {} -d {} -c 100 -st".format(slash, dirname, source)
     if eml:
         cmd += " -fe"
     try:
         logging.info("Running: {}".format(cmd))
-        subprocess.run([cmd], stdout=subprocess.PIPE, stderr=subprocess.PIPE, 
+        a = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, 
                 check=True, cwd="../", shell=True)
         return True
-    except Exception as err:
+    except subprocess.CalledProcessError as err:
         logging.error(err)
         return False
 
@@ -54,9 +61,9 @@ class Test_DarcMailCLI(unittest.TestCase):
         self.sample_eml = "tests/sample_files/eml"
         self.make_dirname = MAKE_DIRNAME
         self.run_darcmail = RUN_DARCMAIL
-        self.eaxs_path = lambda p: os.path.join("../OUTPUT/eaxs", p)
         self.xsd = XSD
         self.validator = etree.XMLSchema(etree.fromstring(self.xsd))
+        self.normalize_path = lambda *p: os.path.normpath(os.path.join(*p)).replace("\\", "/")
 
 
     def test__mbox(self):
@@ -64,7 +71,8 @@ class Test_DarcMailCLI(unittest.TestCase):
         
         # create temporary dirname.
         dirname = self.make_dirname()
-        eaxs = os.path.join(self.eaxs_path(dirname), "eaxs_xml", "{}.xml".format(dirname))
+        eaxs_path = self.normalize_path("../OUTPUT", "eaxs", dirname)
+        eaxs = self.normalize_path(eaxs_path, "eaxs_xml", "{}.xml".format(dirname))
         
         # make the EAXS and validate it.
         result = self.run_darcmail(dirname, self.sample_mbox)
@@ -74,8 +82,8 @@ class Test_DarcMailCLI(unittest.TestCase):
             eaxs = etree.parse(eaxs)
             test = self.validator.validate(eaxs)
 
-        shutil.rmtree(self.eaxs_path(dirname))
-        return test
+        shutil.rmtree(eaxs_path)
+        self.assertTrue(test)
         
 
     def test__eml(self):
@@ -83,7 +91,8 @@ class Test_DarcMailCLI(unittest.TestCase):
 
         # create temporary dirname.
         dirname = self.make_dirname()
-        eaxs = os.path.join(self.eaxs_path(dirname), "eaxs_xml", "{}.xml".format(dirname))
+        eaxs_path = self.normalize_path("../OUTPUT", "eaxs", dirname)
+        eaxs = self.normalize_path(eaxs_path, "eaxs_xml", "{}.xml".format(dirname))
         
         # make the EAXS and validate it.
         result = self.run_darcmail(dirname, self.sample_eml, True)
@@ -93,5 +102,5 @@ class Test_DarcMailCLI(unittest.TestCase):
             eaxs = etree.parse(eaxs)
             test = self.validator.validate(eaxs)
 
-        shutil.rmtree(self.eaxs_path(dirname))
-        return test
+        shutil.rmtree(eaxs_path)
+        self.assertTrue(test)
