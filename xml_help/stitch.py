@@ -31,10 +31,10 @@ class Stitcher:
     def get_root_element_attributes():
         return '<?xml version="1.0" encoding="UTF-8"?>\n' \
                '<Account {}="{}" {}="{}" {}="{}">\n'. \
-            format("xmlns", "http://www.archives.ncdcr.gov/mail-account",
+            format("xmlns", "https://github.com/StateArchivesOfNorthCarolina/tomes-eaxs",
                    "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance",
-                   "xsi:schemaLocation", "http://www.archives.ncdcr.gov/mail-account\n"
-                                         "http://www.history.ncdcr.gov/SHRAB/ar/emailpreservation/mail-account/mail-account.xsd")
+                   "xsi:schemaLocation", "https://github.com/StateArchivesOfNorthCarolina/tomes-eaxs\n"
+                                         "https://raw.githubusercontent.com/StateArchivesOfNorthCarolina/tomes-eaxs/master/eaxs_schema.xsd")
 
     def get_id(self):
         return '<GlobalId>{}</GlobalId>\n'.format(self.global_id)

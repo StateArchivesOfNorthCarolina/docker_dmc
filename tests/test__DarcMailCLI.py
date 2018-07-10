@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 # load EAXS XSD.
-XSD = requests.get("https://raw.githubusercontent.com/StateArchivesOfNorthCarolina/tomes-eaxs/master/mail-account.xsd").text.encode()
+XSD = requests.get("https://raw.githubusercontent.com/StateArchivesOfNorthCarolina/tomes-eaxs/master/eaxs_schema.xsd").text.encode()
 
 
 class Test_DarcMailCLI(unittest.TestCase):

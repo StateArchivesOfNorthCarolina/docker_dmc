@@ -1,5 +1,5 @@
 {
-  "id": "http://www.history.ncdcr.gov/SHRAB/ar/emailpreservation/mail-account/eaxs_schema.json",
+  "id": "https://raw.githubusercontent.com/StateArchivesOfNorthCarolina/tomes-eaxs/master/eaxs_schema.json",
 
   "definitions": {
     "folder-type": {
