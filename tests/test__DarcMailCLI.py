@@ -66,7 +66,7 @@ class Test_DarcMailCLI(unittest.TestCase):
         dirname = self.make_dirname()
         eaxs = os.path.join(self.eaxs_path(dirname), "eaxs_xml", "{}.xml".format(dirname))
         
-        # ???
+        # make the EAXS and validate it.
         result = self.run_darcmail(dirname, self.sample_mbox)
         if not result:
             test = False
@@ -85,7 +85,7 @@ class Test_DarcMailCLI(unittest.TestCase):
         dirname = self.make_dirname()
         eaxs = os.path.join(self.eaxs_path(dirname), "eaxs_xml", "{}.xml".format(dirname))
         
-        # ???
+        # make the EAXS and validate it.
         result = self.run_darcmail(dirname, self.sample_eml, True)
         if not result:
             test = False
