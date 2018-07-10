@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 ####################################################################################
 # 2016-09-21: DarcMailCLI.py
 # Author: Jeremy M. Gibson (State Archives of North Carolina)
