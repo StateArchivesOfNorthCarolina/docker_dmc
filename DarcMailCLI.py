@@ -131,8 +131,8 @@ class DarcMailCLI(object):
                 os.makedirs(self.data_dir)
                 os.makedirs(self.xml_dir)
             except FileExistsError as e:
-                print("An EAXS package for: ({}) already exists.".format(self.account_name))
-                raise FileExistsError
+                err = "An EAXS package for: ({}) already exists.".format(self.account_name)
+                raise FileExistsError(err)
             CommonMethods.set_attachment_dir(self.data_dir)
             CommonMethods.set_xml_dir(self.xml_dir)
             if CommonMethods.get_store_json():
@@ -142,7 +142,7 @@ class DarcMailCLI(object):
 
     def _set_chunksize(self):
         if self.chunksize is not None:
-            print("Setting Stitch to True and Chunksize to {}".format(self.chunksize))
+            self.logger.info("Setting Stitch to True and Chunksize to {}".format(self.chunksize))
             CommonMethods.set_chunk_size(self.chunksize)
             CommonMethods.set_stitch(True)
 
@@ -400,14 +400,13 @@ def main():
     if dmcli.eml_struct:
         CommonMethods.set_package_type(CommonMethods.PACK_TYPE_EML)
         beml = BuildEmlDarcmail(dmcli)
-        exit()
-
-    CommonMethods.set_package_type(CommonMethods.PACK_TYPE_MBOX)
-    if dmcli.validate():
-        dmcli.convert()
-
     else:
-        print("Invalid Folder Structure")
+        CommonMethods.set_package_type(CommonMethods.PACK_TYPE_MBOX)
+        if dmcli.validate():
+            dmcli.convert()
+        else:
+            err = "Invalid MOX folder structure."
+            raise RuntimeError(err)
 
 if __name__ == "__main__":
     try:
