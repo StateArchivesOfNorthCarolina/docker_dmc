@@ -14,10 +14,10 @@ import json
 from collections import OrderedDict
 from email.message import Message
 
-from eaxs.MessageType import DmMessage
-from xml_help.CommonMethods import CommonMethods
-from eaxs.Account import Account
-from eaxs.FolderType import Folder
+from lib.eaxs.MessageType import DmMessage
+from lib.xml_help.CommonMethods import CommonMethods
+from lib.eaxs.Account import Account
+from lib.eaxs.FolderType import Folder
 
 
 class DefaultListOrderedDict(OrderedDict):

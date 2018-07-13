@@ -11,8 +11,8 @@ import logging
 
 from lxml.ElementInclude import etree
 
-from xml_help.CommonMethods import CommonMethods
-from eaxs.FolderType import Folder
+from lib.xml_help.CommonMethods import CommonMethods
+from lib.eaxs.FolderType import Folder
 
 
 class Account(object):

@@ -12,13 +12,13 @@ import logging
 
 from lxml.ElementInclude import etree
 
-from eaxs.HashType import Hash
-from eaxs.HeaderType import Header
-from eaxs.IncompleteParseType import IncompleteParse
-from eaxs.MultiBodyType import MultiBody
-from eaxs.SingleBodyType import SingleBody
-from xml_help.CommonMethods import CommonMethods
-from eaxs_helpers.MessageProcessor import MessageProcessor as MPros
+from lib.eaxs.HashType import Hash
+from lib.eaxs.HeaderType import Header
+from lib.eaxs.IncompleteParseType import IncompleteParse
+from lib.eaxs.MultiBodyType import MultiBody
+from lib.eaxs.SingleBodyType import SingleBody
+from lib.xml_help.CommonMethods import CommonMethods
+from lib.eaxs_helpers.MessageProcessor import MessageProcessor as MPros
 
 status = {'RO': 'Seen',
           'O': 'Unseen',

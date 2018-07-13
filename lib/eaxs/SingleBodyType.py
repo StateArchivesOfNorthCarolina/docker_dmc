@@ -15,12 +15,12 @@ import lxml.etree as etree
 from collections import OrderedDict
 
 
-from eaxs.HeaderType import Header
-from eaxs.ChildMessageType import ChildMessage
-from eaxs.ParameterType import Parameter
-from eaxs.IntBodyContentType import IntBodyContent
-from eaxs.ExtBodyContentType import ExtBodyContent
-from xml_help.CommonMethods import CommonMethods
+from lib.eaxs.HeaderType import Header
+from lib.eaxs.ChildMessageType import ChildMessage
+from lib.eaxs.ParameterType import Parameter
+from lib.eaxs.IntBodyContentType import IntBodyContent
+from lib.eaxs.ExtBodyContentType import ExtBodyContent
+from lib.xml_help.CommonMethods import CommonMethods
 
 
 class SingleBody:

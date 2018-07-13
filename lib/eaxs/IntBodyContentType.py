@@ -8,7 +8,7 @@ from lxml.ElementInclude import etree
 from lxml.etree import CDATA
 from collections import OrderedDict
 
-from xml_help import CommonMethods
+from lib.xml_help import CommonMethods
 
 
 class IntBodyContent:

@@ -7,7 +7,7 @@
 ##############################################################
 from email.message import Message
 
-from eaxs.SingleBodyType import SingleBody as SB
+from lib.eaxs.SingleBodyType import SingleBody as SB
 
 
 class PayloadProcessor:
