@@ -12,9 +12,6 @@ form.
 It also produces, optionally, a serialized JSON version of an EAXS
 encoded account.
 
-Added a config.yml file.  Currently it only takes one path where the
-output of DarcMailCLI will be.
-
 # Requirements
 * Python 3
 * lxml
