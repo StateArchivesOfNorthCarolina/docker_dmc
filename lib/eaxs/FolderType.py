@@ -19,7 +19,8 @@ class Folder:
     def __init__(self, relpath, mbox_path):
         """Constructor for Folder"""
         if CommonMethods.is_eml_struct():
-            self.name = relpath.split(os.path.sep)[-1]
+            #self.name = relpath.split(os.path.sep)[-1]
+            self.name = mbox_path.split(os.sep)[-1] #TODO Nitin trying this.
             self.relpath = relpath
         else:
             self.name = mbox_path.split(os.sep)[-2]  # type: str

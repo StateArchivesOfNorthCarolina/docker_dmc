@@ -57,7 +57,7 @@ class DarcMailCLI(object):
         
         # ???
         self.account_name = account_name
-        self.account_directory = account_directory
+        self.account_directory = str(account_directory)
         self.output_dir = output_directory
         self.eml_struct = from_eml
         self.chunksize = chunksize
@@ -74,6 +74,7 @@ class DarcMailCLI(object):
         self.levels = 1
         self.max_internal = 0
         self.xml_dir = None
+        self.json_dir = None
         self.mbox_structure = None
         self.mboxes = None
         self.eaxs = None
@@ -82,7 +83,7 @@ class DarcMailCLI(object):
 
         # ??? TODO: Nitin. Maybe move into CommonMethods? Nah.
         self._normalize_path = lambda p: os.path.normpath(p).replace("\\", "/")
-        self._join_paths = lambda *p: self._normalize_path(os.path.join(*p))
+        self._join_paths = lambda *p: os.path.join(*p)
 
         # ???
         self._initialize()
@@ -100,21 +101,43 @@ class DarcMailCLI(object):
         CommonMethods.set_from_tomes(self.tomes_tool)
 
         # ???
+        CommonMethods.set_process_paths(self.output_dir)
+        CommonMethods.set_base_path(CommonMethods.get_process_paths())
+        
+        # ???
         if not os.path.isdir(self.account_directory):
             msg = "Account directory '{}' does not exist.".format(self.account_directory)
             self.logger.error(msg)
             raise NotADirectoryError(msg)
 
-        # ???
+        # ??? Can this go here? Make sure darcmail object is complete enough to pass over.
         if not self.eml_struct:
             if not self._validate():
                 err = "Invalid MBOX structure at: {}".format(self.account_directory)
                 self.logger.error(err)
                 raise RuntimeError(err)
+            
+        # ???
+        CommonMethods.set_store_rtf_body(False)
+        CommonMethods.init_hash_dict()
+        CommonMethods.set_dedupe()
+        
+        # ???
+        self.eaxs = self._join_paths(CommonMethods.get_base_path(), "eaxs")
+        self.mboxes = self._join_paths(CommonMethods.get_base_path(), "mboxes") # TODO: Nitin "Is this supposed to be 'mboxes'? It was "eaxs".
+        self.emls = self._join_paths(CommonMethods.get_base_path(), "emls")
+        self.psts = self._join_paths(CommonMethods.get_base_path(), "pst")
 
         # ???
-        CommonMethods.set_process_paths(self.output_dir)
-        CommonMethods.set_base_path(CommonMethods.get_process_paths())
+        self.base_path = self._join_paths(self.eaxs, self.account_name)
+        self.data_dir = self._normalize_path(os.path.abspath(self._join_paths(self.base_path, self.data_dir)))
+        self.xml_dir = self._normalize_path(os.path.abspath(self._join_paths(self.base_path, "eaxs_xml")))
+
+        # ???
+        if os.path.isdir(self.base_path):
+            msg = "Output directory '{}' already exists.".format(self.base_path)
+            self.logger.error(msg)
+            raise OSError(msg)
 
         # ???
         if self.stitch and self.chunksize == 0:
@@ -125,41 +148,19 @@ class DarcMailCLI(object):
         CommonMethods.set_stitch(self.stitch)
 
         # ???
-        self.eaxs = self._join_paths(CommonMethods.get_base_path(), "eaxs")
-        self.mboxes = self._join_paths(CommonMethods.get_base_path(), "mboxes") # TODO: Nitin "Is this supposed to be 'mboxes'? It was "eaxs".
-        self.emls = self._join_paths(CommonMethods.get_base_path(), "emls")
-        self.psts = self._join_paths(CommonMethods.get_base_path(), "pst")
-
-        # ???
-        self.base_path = self._normalize_path(os.path.abspath(self._join_paths(self.eaxs, self.account_name)))
-        self.data_dir = self._normalize_path(os.path.abspath(self._join_paths(self.base_path, self.data_dir)))
-        self.xml_dir = self._normalize_path(os.path.abspath(self._join_paths(self.base_path, "eaxs_xml")))
-        self.json_dir = self._normalize_path(os.path.abspath(self._join_paths(self.base_path, "eaxs_json")))
-
-        # ???
-        if os.path.isdir(self.base_path):
-            msg = "Output directory '{}' already exists.".format(self.base_path)
-            self.logger.error(msg)
-            raise OSError(msg)
-
-        # ???
         CommonMethods.set_rel_attachment_dir(self._join_paths(os.path.sep, self._join_paths(os.path.split(self.base_path)[-1], "attachments")))
         CommonMethods.set_attachment_dir(self.data_dir)
         CommonMethods.set_xml_dir(self.xml_dir)
         
         # ???
         if self.save_json: # TODO: Nitin "This is outputting one JSON file per subfolder in the sample MBOX. Is that correct?"
+            self.json_dir = self._normalize_path(os.path.abspath(self._join_paths(self.base_path, "eaxs_json")))
             if not self.eml_struct: 
                 CommonMethods.set_store_json()
                 CommonMethods.set_json_directory(self.json_dir)
             else:
                 self.logger.warning("JSON output not supported with EML accounts.")
                 self.logger.info("Ignoring JSON output request.")
-                
-        # ???
-        CommonMethods.set_store_rtf_body(False)
-        CommonMethods.init_hash_dict()
-        CommonMethods.set_dedupe()
 
         return
 
@@ -278,9 +279,13 @@ def main(account_name: ("???"),
     try:
         darcmail = DarcMailCLI(account_name, account_directory, output_directory, from_eml, chunksize, stitch, data_directory, save_json, devel, tomes_tool)
         darcmail.create_eaxs()
+        with open ("dm1.txt", "w") as f:
+            for i in darcmail.__dict__:
+                f.write(i +  "\t" + str(darcmail.__dict__[i]) + "\n")
         logging.info("Done.")
         sys.exit()
     except Exception as err:
+        raise err
         logging.critical(err)
         sys.exit(err.__repr__())
 
@@ -288,5 +293,6 @@ def main(account_name: ("???"),
 if __name__ == "__main__":
     import plac
     plac.call(main)
-    #d = DarcMailCLI("m1", "tests/sample_files/eml", "foo", from_eml=True)
+    #d = DarcMailCLI("sm", "tests/sample_files/mbox", "FOO", from_eml=False)
+    #d = DarcMailCLI("se", "tests/sample_files/eml", "FOO", from_eml=True)
     #d.create_eaxs()
