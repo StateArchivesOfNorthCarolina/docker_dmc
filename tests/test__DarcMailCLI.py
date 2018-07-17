@@ -82,7 +82,13 @@ class Test_DarcMailCLI(unittest.TestCase):
             eaxs = etree.parse(eaxs)
             test = self.validator.validate(eaxs)
 
-        shutil.rmtree(eaxs_path)
+        # delete temp output.
+        try:
+            shutil.rmtree(eaxs_path)
+        except Exception as err:
+            logging.warning("Can't delete folder: {}".format(eaxs_path))
+            logging.error(err)
+
         self.assertTrue(test)
         
 
@@ -102,5 +108,11 @@ class Test_DarcMailCLI(unittest.TestCase):
             eaxs = etree.parse(eaxs)
             test = self.validator.validate(eaxs)
 
-        shutil.rmtree(eaxs_path)
+        # delete temp output.
+        try:
+            shutil.rmtree(eaxs_path)
+        except Exception as err:
+            logging.warning("Can't delete folder: {}".format(eaxs_path))
+            logging.error(err)
+
         self.assertTrue(test)

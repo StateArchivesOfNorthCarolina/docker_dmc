@@ -84,11 +84,15 @@ class CommonMethods:
         globals()["__DEVEL__"] = d
 
     @staticmethod
-    def get_process_paths():
+    def set_process_paths(output_dir: str):
         if globals()["__DEVEL__"]:
-            return "E:\\RESOURCES\\TEST_RESOURCES\\tomes\\data"
+            globals()["__PROCESS_PATH__"] = "E:\\RESOURCES\\TEST_RESOURCES\\tomes\\data"
         else:
-            return "OUTPUT"
+            globals()["__PROCESS_PATH__"] = output_dir
+
+    @staticmethod
+    def get_process_paths():
+        return globals()["__PROCESS_PATH__"]
 
     @staticmethod
     def set_from_tomes(tt: bool):
@@ -113,7 +117,7 @@ class CommonMethods:
         globals()["__HASH_LIST__"] = {}
 
     @staticmethod
-    def set_chunk_size(size=None):
+    def set_chunk_size(size=0):
         try:
             assert type(size) == int
             globals()["__CHUNKS__"] = size

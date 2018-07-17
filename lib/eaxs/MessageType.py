@@ -36,7 +36,7 @@ class DmMessage:
         self.message = message  # type: Message
         self.fn = fn
         # First parts of the schema message-type
-        self.relative_path = rel_path  # type: str
+        self.relative_path = rel_path #TODO NITIN: .replace("\\", "/").replace("//", "/")  # type: str
         self.local_id = local_id
         self.message_id = CommonMethods.cdata_wrap(self.message.get("Message-ID"))  # type: str
         if self.message_id == '' or self.message_id is None:
