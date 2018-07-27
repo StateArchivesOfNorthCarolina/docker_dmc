@@ -34,7 +34,7 @@ class Stitcher:
             format("xmlns", "https://github.com/StateArchivesOfNorthCarolina/tomes-eaxs",
                    "xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance",
                    "xsi:schemaLocation", "https://github.com/StateArchivesOfNorthCarolina/tomes-eaxs\n"
-                                         "https://raw.githubusercontent.com/StateArchivesOfNorthCarolina/tomes-eaxs/master/eaxs_schema.xsd")
+                                         "https://raw.githubusercontent.com/StateArchivesOfNorthCarolina/tomes-eaxs/master/versions/1/eaxs_schema_v1.xsd")
 
     def get_id(self):
         return '<GlobalId>{}</GlobalId>\n'.format(self.global_id)

@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 # load EAXS XSD.
-XSD = requests.get("https://raw.githubusercontent.com/StateArchivesOfNorthCarolina/tomes-eaxs/master/eaxs_schema.xsd").text.encode()
+XSD = requests.get("https://raw.githubusercontent.com/StateArchivesOfNorthCarolina/tomes-eaxs/master/versions/1/eaxs_schema_v1.xsd").text.encode()
 
 
 # generate random folder name based on SHA-256 hash of time plus a random number.

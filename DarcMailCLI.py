@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
 
 """ This module contains a class for ???
-TODO: Nitin clean up ...
+
+TODO:
+- code clean up and commenting.
+- add dunders.
+- address errors file tasks.
+- setup.py
+- gitignore
+- 
 
 ####################################################################################
 # 2016-09-21: DarcMailCLI.py
@@ -14,19 +21,17 @@ TODO: Nitin clean up ...
 """
 
 # import modules.
-import os
-import argparse
 import logging
 import logging.config
-import yaml
+import os
 import sys
+import yaml
 from lib.BuildEmlDarcmail import BuildEmlDarcmail
-from lib.ValidateStructure import ValidateStructure
 from lib.dir_walker.MboxWalker import MboxWalker
 from lib.xml_help.CommonMethods import CommonMethods
 
 
-class DarcMailCLI(object):
+class DarcMail(object):
     """ A class for ... ??? Refactor of CmdDArcMailXml GetArgs
 
     Attributes:
@@ -54,11 +59,17 @@ class DarcMailCLI(object):
         # ???
         self.logger = logging.getLogger(__name__)
         self.logger.addHandler(logging.NullHandler())
+
+        # convenience functions to clean up path notation.
+        self._normalize_sep = lambda p: p.replace(os.sep, os.altsep) if (
+                os.altsep == "/") else p
+        self._normalize_path = lambda p: self._normalize_sep(os.path.relpath(p))  
+        self._join_paths = lambda *p: self._normalize_path(os.path.join(*p))
         
         # ???
-        self.account_name = account_name
-        self.account_directory = str(account_directory)
-        self.output_dir = output_directory
+        self.account_name = account_name #TODO: Force this to be isidentitifer().
+        self.account_directory = self._normalize_path(account_directory)
+        self.output_dir = self._normalize_path(output_directory)
         self.eml_struct = from_eml
         self.chunksize = chunksize
         self.stitch = stitch
@@ -80,10 +91,6 @@ class DarcMailCLI(object):
         self.eaxs = None
         self.emls = None
         self.psts = None
-
-        # ??? TODO: Nitin. Maybe move into CommonMethods? Nah.
-        self._normalize_path = lambda p: os.path.normpath(p).replace("\\", "/")
-        self._join_paths = lambda *p: os.path.join(*p)
 
         # ???
         self._initialize()
@@ -176,11 +183,11 @@ class DarcMailCLI(object):
         #       This currently follows assumptions made inal DarcMail, many of which are no longer valid in this context.
 
         # ???
-        vs = ValidateStructure(self)
-        vs.validate()
-        self.mbox_structure = vs.structure
-
-        return vs.is_valid
+        return True
+        #vs = ValidateStructure(self)
+        #vs.validate()
+        #self.mbox_structure = vs.structure
+        #return vs.is_valid
     
 
     def _data_dir(self):
@@ -241,7 +248,6 @@ class DarcMailCLI(object):
 
         return
 
-
 # CLI.
 def main(account_name: ("???"), 
         account_directory: ("???"),
@@ -256,7 +262,7 @@ def main(account_name: ("???"),
         data_directory: ("???", "option")="attachments"):
 
     "Converts mbox|eml to EAXS XML.\
-    \nexample: `py -3 DarcMailCLI.py sample_mbox ../tests/sample_files/mbox sample_eaxs`"
+    \nexample: `python3 DarcMailCLI.py sample_mbox ../tests/sample_files/mbox sample_eaxs`"
 
     # make sure logging directory exists.
     logdir = "log"
@@ -277,11 +283,10 @@ def main(account_name: ("???"),
     # make tagged version of EAXS.
     logging.info("Running CLI: " + " ".join(sys.argv))
     try:
-        darcmail = DarcMailCLI(account_name, account_directory, output_directory, from_eml, chunksize, stitch, data_directory, save_json, devel, tomes_tool)
+        darcmail = DarcMail(account_name, account_directory, output_directory, from_eml, chunksize, stitch, data_directory, save_json, devel, tomes_tool)
         darcmail.create_eaxs()
-        with open ("dm1.txt", "w") as f:
-            for i in darcmail.__dict__:
-                f.write(i +  "\t" + str(darcmail.__dict__[i]) + "\n")
+        for i in darcmail.__dict__:
+            print(i, darcmail.__dict__[i], type(darcmail.__dict__[i]), sep=" | ")
         logging.info("Done.")
         sys.exit()
     except Exception as err:
@@ -293,6 +298,8 @@ def main(account_name: ("???"),
 if __name__ == "__main__":
     import plac
     plac.call(main)
-    #d = DarcMailCLI("sm", "tests/sample_files/mbox", "FOO", from_eml=False)
-    #d = DarcMailCLI("se", "tests/sample_files/eml", "FOO", from_eml=True)
-    #d.create_eaxs()
+    #darcmail = DarcMail("sm", "tests/sample_files/mbox", "FOO", from_eml=False)
+    #darcmail = DarcMail("se", "tests/sample_files/eml", "FOO", from_eml=True)
+    #darcmail.create_eaxs()
+    #for i in darcmail.__dict__:
+    #    print(i, darcmail.__dict__[i], type(darcmail.__dict__[i]), sep=" | ")
