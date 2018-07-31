@@ -1,20 +1,20 @@
-from distutils.core import setup
+from setuptools import setup, setuptools
+from tomes_darcmail.DarcMailCLI import __NAME__, __DESCRIPTION__, __URL__, __VERSION__, __AUTHOR__, __AUTHOR_EMAIL__
 
+def doc():
+    with open("docs/documentation.md") as d:
+        return d.read()
+		
 setup(
-    name='docker_dmc',
-    version='0.0.1',
-    packages=['eaxs', 'xml_help', 'eaxs_json',
-              'dir_walker', 'eaxs_helpers'],
-    url='',
-    license='LICENSE.txt',
-    author='Jeremy Gibson',
-    author_email='jeremy.gibson@ncdcr.gov',
-    description='A modified CmdDarcMail for docker-compose',
-    install_requires=[
-        "python_jsonschema_objects" >= '0.2.1',
-        "lxml" == '3.8.0',
-        "ftfy" == '5.0.2',
-        "beautifulsoup4" == '4.6.0',
-        "PyYAML" == '3.12'
-    ]
+    name = __NAME__,
+    description = __DESCRIPTION__,
+    url = __URL__,
+    version = __VERSION__,
+    author = __AUTHOR__,
+    author_email = __AUTHOR_EMAIL__,
+    packages = setuptools.find_packages(),
+    include_package_data = True,
+    python_requires = ">=3",
+    license = "LICENSE.txt",
+    long_description = doc(),
 )
