@@ -74,7 +74,7 @@ class DarcMail(object):
         self.chunksize = chunksize
         self.stitch = stitch
         self.data_dir = data_directory
-        ##self.save_json = save_json # DISABLED.
+        self.save_json = False #save_json # DISABLED.
         self.devel = _devel
         self.tomes_tool = _tomes_tool
 
@@ -109,6 +109,8 @@ class DarcMail(object):
             OSError: If the destination path already exists. 
         """
 
+        self.logger.info("Initializing account data.")
+
         # set global development and "tomes_tool" mode before anything else happens.
         CommonMethods.set_devel(self.devel)
         CommonMethods.set_from_tomes(self.tomes_tool)
@@ -129,12 +131,6 @@ class DarcMail(object):
             msg = "Account directory '{}' does not exist.".format(self.account_directory)
             self.logger.error(msg)
             raise NotADirectoryError(msg)
-
-        # verify @self.output_directory is a folder.
-        '''if not os.path.isdir(self.output_directory):
-            msg = "Output directory '{}' does not exist.".format(self.output_directory)
-            self.logger.error(msg)
-            raise NotADirectoryError(msg)'''
         
         # if the account is an MBOX, validate it. # DISABLED.
         ##if not self.eml_struct:
@@ -201,10 +197,18 @@ class DarcMail(object):
             True if an MBOX structure is valid. Otherwise, False.
         """
 
+        self.logger.info("Validating MBOX at: {}".format(self.account_directory))
+
         # validate the MBOX.
         vs = ValidateStructure(self)
         vs.validate()
         self.mbox_structure = vs.structure
+        
+        # report on validity.
+        if vs.is_valid:
+            self.logger.info("MBOX is valid.")
+        else:
+            self.logger.warning("MBOX is not valid; serious errors may occur.")
         
         return vs.is_valid
 
@@ -215,6 +219,8 @@ class DarcMail(object):
         Returns:
             None
         """
+
+        self.logger.info("Creating output directories.")
 
         # create output folders.
         os.makedirs(self.data_dir)
@@ -236,12 +242,14 @@ class DarcMail(object):
 
         # if @self.from_eml is True, parse @self.account_directory as EML.
         if self.eml_struct:
+            self.logger.info("Converting EML to EAXS.")
             CommonMethods.set_package_type(CommonMethods.PACK_TYPE_EML)
             self._create_data_dirs()
             beml = BuildEmlDarcmail(self)
             return
 
         # otherwise, parse the account as MBOX.
+        self.logger.info("Converting MBOX to EAXS.")
         CommonMethods.set_package_type(CommonMethods.PACK_TYPE_MBOX)
         self._create_data_dirs()
         wlk = MboxWalker(self.account_directory, self.xml_dir, self.account_name)
@@ -264,8 +272,8 @@ class DarcMail(object):
             self.logger.info("Created EAXS at: {}".format(self.xml_dir))
             self.event_logger.info({"entity": "agent", "name": __NAME__, 
                     "fullname": __FULLNAME__, "uri": __URL__, "version": __VERSION__})
-            self.event_logger.info({"entity": "event", "name": "mime_to_eaxs_eaxs", 
-                "agent": __NAME__, "object": "tagged_eaxs"})
+            self.event_logger.info({"entity": "event", "name": "mime_to_eaxs", 
+                "agent": __NAME__, "object": "eaxs"})
             self.event_logger.info({"entity": "object", "name": "mime", 
                 "category": "representation"})
             self.event_logger.info({"entity": "object", "name": "eaxs", 
@@ -288,7 +296,7 @@ def main(account_name: ("account identifier"),
         data_directory: ("attachment folder", "option")="attachments"):
 
     "Converts EML|MBOX to EAXS.\
-    \nexample: `python3 darcmail.py sample_mbox ../tests/sample_files/mbox"
+    \nexample: `python3 darcmail.py sample_mbox ../tests/sample_files/mbox -o OUTPUT"
 
     # make sure logging directory exists.
     logdir = "log"
@@ -322,3 +330,5 @@ def main(account_name: ("account identifier"),
 if __name__ == "__main__":
     import plac
     plac.call(main)
+    #d = DarcMail("sm", "../tests/sample_files/mbox", "")
+    #d.create_eaxs()
