@@ -31,14 +31,16 @@ class DarcMail(object):
     Carl Schaefer (Smithsonian Institution Archives).
     
     Attributes:
-        xml_dir(str): ???
-        data_dir (str): ???
+        xml_dir(str): The path containing the EAXS file/s.
+        data_dir (str): The path containing EAXS attachments.
 
-    Example: ???
-        darcmail = DarcMail()???
-        os.path.isdir(darcmail.xml_dir) # False
-        darcmail.create_eaxs()
-        os.path.isdir(darcmail.xml_dir) # True        
+    Example:
+        >>> import os
+        >>> sample_mbox = os.path.join("..", "tests", "sample_files", "mbox")
+        >>> darcmail = DarcMail("sm", sample_mbox, ".")
+        >>> os.path.isdir(darcmail.xml_dir) # False
+        >>> darcmail.create_eaxs()
+        >>> os.path.isdir(darcmail.xml_dir) # True       
     """
 
     def __init__(self,
@@ -49,7 +51,7 @@ class DarcMail(object):
                  chunksize=0,
                  stitch=False,
                  data_directory="attachments",
-                 #save_json=False, # DISABLED.
+                 ##save_json=False, # DISABLED.
                  _devel=False,
                  _tomes_tool=False
                  ):
@@ -66,33 +68,29 @@ class DarcMail(object):
         self._normalize_path = lambda p: self._normalize_sep(p)  
         self._join_paths = lambda *p: self._normalize_path(os.path.join(*p))
 
-        # set attributes.
+        # set argument attributes.
         self.account_name = account_name
         self.account_directory = self._normalize_path(account_directory)
         self.output_directory = self._normalize_path(output_directory)
         self.eml_struct = from_eml
         self.chunksize = chunksize
         self.stitch = stitch
-        self.data_dir = data_directory
-        self.save_json = False #save_json # DISABLED.
+        self.save_json = False ##save_json # DISABLED.
         self.devel = _devel
         self.tomes_tool = _tomes_tool
 
-        # ???
+        # set computed attributes.
         self.base_path = None
-        self.folder_name = None
-        self.folder_path = None
         self.levels = 1
         self.max_internal = 0
         self.xml_dir = None
         self.json_dir = None
+        self.data_dir = data_directory
         self.mbox_structure = None
         self.mboxes = None
         self.eaxs = None
         self.emls = None
         self.psts = None
-
-        # ???
         self._initialize()
 
 
@@ -139,7 +137,7 @@ class DarcMail(object):
         ##        self.logger.error(err)
         ##        raise RuntimeError(err)
             
-        # set more globals. ???
+        # set additional globals.
         CommonMethods.set_store_rtf_body(False)
         CommonMethods.init_hash_dict()
         CommonMethods.set_dedupe()
@@ -169,7 +167,7 @@ class DarcMail(object):
         CommonMethods.set_chunk_size(self.chunksize)
         CommonMethods.set_stitch(self.stitch)
 
-        # set attachment data and EAXS XML folders; create them.
+        # set attachment data and EAXS XML folders.
         CommonMethods.set_rel_attachment_dir(self._join_paths(os.path.sep, self._join_paths(
             os.path.split(self.base_path)[-1], "attachments")))
         CommonMethods.set_attachment_dir(self.data_dir)
@@ -291,8 +289,9 @@ def main(account_name: ("account identifier"),
         silent: ("disable console logs", "flag", "s"),
         from_eml: ("toggle EML processing", "flag", "fe"),
         stitch: ("combine chuncked EAXS files", "flag", "st"),
-        output_directory: ("EAXS destination (default = account directory)", "option", "o")="",
         chunksize: ("messages per chuncked EAXS file (estimate)", "option", "c", int)="0",
+        output_directory: ("EAXS destination (default = account directory)", "option", 
+            "o")="",
         data_directory: ("attachment folder", "option")="attachments"):
 
     "Converts EML|MBOX to EAXS.\
@@ -317,7 +316,8 @@ def main(account_name: ("account identifier"),
     # make tagged version of EAXS.
     logging.info("Running CLI: " + " ".join(sys.argv))
     try:
-        darcmail = DarcMail(account_name, account_directory, output_directory, from_eml, chunksize, stitch, data_directory)
+        darcmail = DarcMail(account_name, account_directory, from_eml, stitch, chunksize,
+                output_directory, data_directory)
         darcmail.create_eaxs()
         logging.info("Done.")
         sys.exit()
@@ -330,5 +330,3 @@ def main(account_name: ("account identifier"),
 if __name__ == "__main__":
     import plac
     plac.call(main)
-    #d = DarcMail("sm", "../tests/sample_files/mbox", "")
-    #d.create_eaxs()
