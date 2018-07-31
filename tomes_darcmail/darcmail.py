@@ -1,0 +1,324 @@
+#!/usr/bin/env python3
+
+""" This module contains a class for converting EML or MBOX to EAXS. This is a fork of 
+CmdDArcMailXml.py by Carl Schaefer (Smithsonian Institution Archives). 
+
+Todo:
+    * Determine if "DISABLED" features should be re-instated.
+"""
+
+__NAME__ = "tomes_darcmail"
+__FULLNAME__ = "TOMES DarcMail"
+__DESCRIPTION__ = "Part of the TOMES project: converts EML or MBOX to EAXS."
+__URL__ = "https://github.com/StateArchivesOfNorthCarolina/tomes-darcmail"
+__VERSION__ = "0.0.1"
+__AUTHOR__ = "Jeremy M. Gibson"
+__AUTHOR_EMAIL__ = "Jeremy.Gibson@ncdcr.gov"
+
+# import modules.
+import logging
+import logging.config
+import os
+import sys
+import yaml
+from lib.BuildEmlDarcmail import BuildEmlDarcmail
+from lib.dir_walker.MboxWalker import MboxWalker
+from lib.xml_help.CommonMethods import CommonMethods
+
+
+class DarcMail(object):
+    """ A class for converting EML or MBOX to EAXS. This is a fork of CmdDArcMailXml.py by 
+    Carl Schaefer (Smithsonian Institution Archives).
+    
+    Attributes:
+        xml_dir(str): ???
+        data_dir (str): ???
+
+    Example: ???
+        darcmail = DarcMail()???
+        os.path.isdir(darcmail.xml_dir) # False
+        darcmail.create_eaxs()
+        os.path.isdir(darcmail.xml_dir) # True        
+    """
+
+    def __init__(self,
+                 account_name,
+                 account_directory,
+                 output_directory,
+                 from_eml=False,
+                 chunksize=0,
+                 stitch=False,
+                 data_directory="attachments",
+                 #save_json=False, # DISABLED.
+                 _devel=False,
+                 _tomes_tool=False
+                 ):
+        
+        # set logging.
+        self.logger = logging.getLogger(__name__)
+        self.logger.addHandler(logging.NullHandler())
+        self.event_logger = logging.getLogger("event_logger")
+        self.event_logger.addHandler(logging.NullHandler())
+
+        # convenience functions to clean up path notation.
+        self._normalize_sep = lambda p: p.replace(os.sep, os.altsep) if (
+                os.altsep == "/") else p
+        self._normalize_path = lambda p: self._normalize_sep(p)  
+        self._join_paths = lambda *p: self._normalize_path(os.path.join(*p))
+
+        # set attributes.
+        self.account_name = account_name
+        self.account_directory = self._normalize_path(account_directory)
+        self.output_directory = self._normalize_path(output_directory)
+        self.eml_struct = from_eml
+        self.chunksize = chunksize
+        self.stitch = stitch
+        self.data_dir = data_directory
+        ##self.save_json = save_json # DISABLED.
+        self.devel = _devel
+        self.tomes_tool = _tomes_tool
+
+        # ???
+        self.base_path = None
+        self.folder_name = None
+        self.folder_path = None
+        self.levels = 1
+        self.max_internal = 0
+        self.xml_dir = None
+        self.json_dir = None
+        self.mbox_structure = None
+        self.mboxes = None
+        self.eaxs = None
+        self.emls = None
+        self.psts = None
+
+        # ???
+        self._initialize()
+
+
+    def _initialize(self):
+        """ Validates the constructor's argument values; sets common features and attributes.
+
+        Returns:
+            None
+
+        Raises:
+            TypeError: If @self.account_name is not an identifier.
+            NotADirectoryError: If @self.account_directory is not a folder or if the 
+            specified output path is not a folder.
+            OSError: If the destination path already exists. 
+        """
+
+        # set global development and "tomes_tool" mode before anything else happens.
+        CommonMethods.set_devel(self.devel)
+        CommonMethods.set_from_tomes(self.tomes_tool)
+
+        # set processing/output path.
+        CommonMethods.set_process_paths(self.output_directory)
+        CommonMethods.set_base_path(CommonMethods.get_process_paths())
+
+        # verify @self.account_name is an identifier.
+        if not self.account_name.isidentifier():
+            msg = "An account name must contain only letters, numbers, and hyphens"
+            msg += " and cannot start with a number."
+            self.logger.error(msg)
+            raise TypeError(msg)
+
+        # verify @self.account_directory is a folder.
+        if not os.path.isdir(self.account_directory):
+            msg = "Account directory '{}' does not exist.".format(self.account_directory)
+            self.logger.error(msg)
+            raise NotADirectoryError(msg)
+
+        # verify @self.output_directory is a folder.
+        '''if not os.path.isdir(self.output_directory):
+            msg = "Output directory '{}' does not exist.".format(self.output_directory)
+            self.logger.error(msg)
+            raise NotADirectoryError(msg)'''
+        
+        # if the account is an MBOX, validate it. # DISABLED.
+        ##if not self.eml_struct:
+        ##    if not self._validate():
+        ##        err = "Invalid MBOX structure at: {}".format(self.account_directory)
+        ##        self.logger.error(err)
+        ##        raise RuntimeError(err)
+            
+        # set more globals. ???
+        CommonMethods.set_store_rtf_body(False)
+        CommonMethods.init_hash_dict()
+        CommonMethods.set_dedupe()
+        
+        # set data paths.
+        self.eaxs = self._join_paths(CommonMethods.get_base_path(), "eaxs")
+        self.mboxes = self._join_paths(CommonMethods.get_base_path(), "mboxes")
+        self.emls = self._join_paths(CommonMethods.get_base_path(), "emls")
+        self.psts = self._join_paths(CommonMethods.get_base_path(), "pst")
+        self.base_path = self._join_paths(self.eaxs, self.account_name)
+        self.data_dir = self._normalize_path(os.path.abspath(self._join_paths(self.base_path,
+            self.data_dir)))
+        self.xml_dir = self._normalize_path(os.path.abspath(self._join_paths(self.base_path,
+            "eaxs_xml")))
+
+        # verify @self.base_path doesn't exist.
+        if os.path.isdir(self.base_path):
+            msg = "Output directory '{}' already exists.".format(self.base_path)
+            self.logger.error(msg)
+            raise OSError(msg)
+
+        # set stitching values.
+        if self.stitch and self.chunksize == 0:
+            self.logger.warning("Stitch request requires a chunksize of greater than 0.")
+            self.logger.info("Ignoring stitch request.")
+            self.stitch = False
+        CommonMethods.set_chunk_size(self.chunksize)
+        CommonMethods.set_stitch(self.stitch)
+
+        # set attachment data and EAXS XML folders; create them.
+        CommonMethods.set_rel_attachment_dir(self._join_paths(os.path.sep, self._join_paths(
+            os.path.split(self.base_path)[-1], "attachments")))
+        CommonMethods.set_attachment_dir(self.data_dir)
+        CommonMethods.set_xml_dir(self.xml_dir)
+        
+        # toggle JSON output. # DISABLED.
+        ##if self.save_json:
+        ##    self.json_dir = self._normalize_path(os.path.abspath(self._join_paths(
+        ##        self.base_path, "eaxs_json")))
+        ##    if not self.eml_struct: 
+        ##        CommonMethods.set_store_json()
+        ##        CommonMethods.set_json_directory(self.json_dir)
+        ##    else:
+        ##        self.logger.warning("JSON output not supported with EML accounts.")
+        ##        self.logger.info("Ignoring JSON output request.")
+
+        return
+
+        
+    def _validate(self): # DISABLED.
+        """ Validates @self.account_directory as an MBOX if @self_from_eml if False.
+
+        Returns:
+            bool: The return value.
+            True if an MBOX structure is valid. Otherwise, False.
+        """
+
+        # validate the MBOX.
+        vs = ValidateStructure(self)
+        vs.validate()
+        self.mbox_structure = vs.structure
+        
+        return vs.is_valid
+
+
+    def _create_data_dirs(self):
+        """ Creates output folders.
+
+        Returns:
+            None
+        """
+
+        # create output folders.
+        os.makedirs(self.data_dir)
+        os.makedirs(self.xml_dir)
+
+        # if needed, create JSON output folder. # DISABLED.
+        ##if CommonMethods.get_store_json():
+        ##    os.makedirs(self.json_dir)
+
+        return
+
+
+    def _convert(self):
+        """ Converts EML or MBOX to EAXS.
+
+        Returns:
+            None
+        """
+
+        # if @self.from_eml is True, parse @self.account_directory as EML.
+        if self.eml_struct:
+            CommonMethods.set_package_type(CommonMethods.PACK_TYPE_EML)
+            self._create_data_dirs()
+            beml = BuildEmlDarcmail(self)
+            return
+
+        # otherwise, parse the account as MBOX.
+        CommonMethods.set_package_type(CommonMethods.PACK_TYPE_MBOX)
+        self._create_data_dirs()
+        wlk = MboxWalker(self.account_directory, self.xml_dir, self.account_name)
+        wlk._gather_mboxes()
+        wlk.do_walk()
+
+        return
+
+
+    def create_eaxs(self):
+        """ Creates an EAXS account.
+
+        Returns:
+            None
+        """
+        
+        # run self._convert() and log event data.
+        try:
+            self._convert()
+            self.logger.info("Created EAXS at: {}".format(self.xml_dir))
+            self.event_logger.info({"entity": "agent", "name": __NAME__, 
+                    "fullname": __FULLNAME__, "uri": __URL__, "version": __VERSION__})
+            self.event_logger.info({"entity": "event", "name": "mime_to_eaxs_eaxs", 
+                "agent": __NAME__, "object": "tagged_eaxs"})
+            self.event_logger.info({"entity": "object", "name": "mime", 
+                "category": "representation"})
+            self.event_logger.info({"entity": "object", "name": "eaxs", 
+                    "category": "representation"})
+        except Exception as err:
+            self.logger.error(err)
+            raise err
+
+        return
+
+
+# CLI.
+def main(account_name: ("account identifier"), 
+        account_directory: ("source account"),
+        silent: ("disable console logs", "flag", "s"),
+        from_eml: ("toggle EML processing", "flag", "fe"),
+        stitch: ("combine chuncked EAXS files", "flag", "st"),
+        output_directory: ("EAXS destination (default = account directory)", "option", "o")="",
+        chunksize: ("messages per chuncked EAXS file (estimate)", "option", "c", int)="0",
+        data_directory: ("attachment folder", "option")="attachments"):
+
+    "Converts EML|MBOX to EAXS.\
+    \nexample: `python3 darcmail.py sample_mbox ../tests/sample_files/mbox"
+
+    # make sure logging directory exists.
+    logdir = "log"
+    if not os.path.isdir(logdir):
+        os.mkdir(logdir)
+
+    # get absolute path to logging config file.
+    config_dir = os.path.dirname(os.path.abspath(__file__))
+    config_file = os.path.join(config_dir, "logger.yaml")
+    
+    # load logging config file.
+    with open(config_file) as cf:
+        config = yaml.safe_load(cf.read())
+    if silent:
+        config["handlers"]["console"]["level"] = 100
+    logging.config.dictConfig(config)
+    
+    # make tagged version of EAXS.
+    logging.info("Running CLI: " + " ".join(sys.argv))
+    try:
+        darcmail = DarcMail(account_name, account_directory, output_directory, from_eml, chunksize, stitch, data_directory)
+        darcmail.create_eaxs()
+        logging.info("Done.")
+        sys.exit()
+    except Exception as err:
+        raise err
+        logging.critical(err)
+        sys.exit(err.__repr__())
+
+
+if __name__ == "__main__":
+    import plac
+    plac.call(main)
