@@ -37,24 +37,41 @@ class DarcMail(object):
     Example:
         >>> import os
         >>> sample_mbox = os.path.join("..", "tests", "sample_files", "mbox")
-        >>> darcmail = DarcMail("sm", sample_mbox, ".")
+        >>> darcmail = DarcMail("sample_mbox_account", sample_mbox, ".")
         >>> os.path.isdir(darcmail.xml_dir) # False
         >>> darcmail.create_eaxs()
         >>> os.path.isdir(darcmail.xml_dir) # True       
     """
 
     def __init__(self,
-                 account_name,
-                 account_directory,
-                 output_directory,
-                 from_eml=False,
-                 chunksize=0,
-                 stitch=False,
-                 data_directory="attachments",
-                 ##save_json=False, # DISABLED.
-                 _devel=False,
-                 _tomes_tool=False
-                 ):
+             account_name,
+             account_directory,
+             output_directory,
+             from_eml=False,
+             chunksize=0,
+             stitch=False,
+             data_directory="attachments",
+             ##save_json=False, # DISABLED.
+             _devel=False,
+             _tomes_tool=False):
+
+        """ Sets instance attributes.
+
+        Args:
+            - account_name (str): The identifier to use for the email account.
+            - account_directory (str): The path to the EML or MBOX account data.
+            - output_directory (str): The containing folder in which to write the EAXS file/s.
+            - from_eml (bool): Use True to specify an EML source account. Use False to specify
+            and MBOX source account.
+            - chunksize (int): The ideal number of messages within an EAXS file. If 0, one
+            EAXS file will be written. Otherwise, an EAXS file will be written for every
+            @chunksize number of messages. Note: this is an estimate as messages within a 
+            single email folder are kept intact within each EAXS file.
+            - stitch (bool): Use True to combine multiple EAXS files. Otherwise, use False.
+            - data_directory (str): The directory in which to write EAXS attachment files.
+            - _devel (bool): FOR TOMES DOCKER USE ONLY.
+             _tomes_tool (bool): FOR TOMES DOCKER USE ONLY.
+        """
         
         # set logging.
         self.logger = logging.getLogger(__name__)
@@ -110,6 +127,10 @@ class DarcMail(object):
         self.logger.info("Initializing account data.")
 
         # set global development and "tomes_tool" mode before anything else happens.
+        if self.devel:
+            self.logger.info("Entering 'dev' mode.")
+        if self.tomes_tool:
+            self.logger.info("Entering 'Tomes Tool' mode.")
         CommonMethods.set_devel(self.devel)
         CommonMethods.set_from_tomes(self.tomes_tool)
 
@@ -286,16 +307,15 @@ class DarcMail(object):
 # CLI.
 def main(account_name: ("account identifier"), 
         account_directory: ("source account"),
+        output_directory: ("EAXS destination"),
         silent: ("disable console logs", "flag", "s"),
         from_eml: ("toggle EML processing", "flag", "fe"),
         stitch: ("combine chuncked EAXS files", "flag", "st"),
-        chunksize: ("messages per chuncked EAXS file (estimate)", "option", "c", int)="0",
-        output_directory: ("EAXS destination (default = account directory)", "option", 
-            "o")="",
+        chunksize: ("messages per chuncked EAXS file (estimate)", "option", "c", int)=0,
         data_directory: ("attachment folder", "option")="attachments"):
 
     "Converts EML|MBOX to EAXS.\
-    \nexample: `python3 darcmail.py sample_mbox ../tests/sample_files/mbox -o OUTPUT"
+    \nexample: `python3 darcmail.py sample_mbox ../tests/sample_files/mbox -o OUTPUT`"
 
     # make sure logging directory exists.
     logdir = "log"
@@ -316,8 +336,10 @@ def main(account_name: ("account identifier"),
     # make tagged version of EAXS.
     logging.info("Running CLI: " + " ".join(sys.argv))
     try:
-        darcmail = DarcMail(account_name, account_directory, from_eml, stitch, chunksize,
-                output_directory, data_directory)
+        _devel = "_DEVEL" in output_directory
+        _tomes_tool = "TOMES_TOOL" in output_directory
+        darcmail = DarcMail(account_name, account_directory, output_directory, from_eml,
+                stitch, chunksize, data_directory, _devel, _tomes_tool)
         darcmail.create_eaxs()
         logging.info("Done.")
         sys.exit()
