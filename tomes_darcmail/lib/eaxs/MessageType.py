@@ -12,13 +12,13 @@ import logging
 
 from lxml.ElementInclude import etree
 
-from lib.eaxs.HashType import Hash
-from lib.eaxs.HeaderType import Header
-from lib.eaxs.IncompleteParseType import IncompleteParse
-from lib.eaxs.MultiBodyType import MultiBody
-from lib.eaxs.SingleBodyType import SingleBody
-from lib.xml_help.CommonMethods import CommonMethods
-from lib.eaxs_helpers.MessageProcessor import MessageProcessor as MPros
+from tomes_darcmail.lib.eaxs.HashType import Hash
+from tomes_darcmail.lib.eaxs.HeaderType import Header
+from tomes_darcmail.lib.eaxs.IncompleteParseType import IncompleteParse
+from tomes_darcmail.lib.eaxs.MultiBodyType import MultiBody
+from tomes_darcmail.lib.eaxs.SingleBodyType import SingleBody
+from tomes_darcmail.lib.xml_help.CommonMethods import CommonMethods
+from tomes_darcmail.lib.eaxs_helpers.MessageProcessor import MessageProcessor as MPros
 
 status = {'RO': 'Seen',
           'O': 'Unseen',

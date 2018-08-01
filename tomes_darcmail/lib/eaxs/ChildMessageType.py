@@ -5,8 +5,8 @@
 # Description: Implementation of the ChildMessageType
 ##############################################################
 
-from lib.eaxs.MessageIdType import MessageId
-from lib.eaxs.HeaderType import Header
+from tomes_darcmail.lib.eaxs.MessageIdType import MessageId
+from tomes_darcmail.lib.eaxs.HeaderType import Header
 
 class ChildMessage:
     """"""

@@ -11,8 +11,8 @@ import logging
 
 from lxml.ElementInclude import etree
 
-from lib.xml_help.CommonMethods import CommonMethods
-from lib.eaxs.FolderType import Folder
+from tomes_darcmail.lib.xml_help.CommonMethods import CommonMethods
+from tomes_darcmail.lib.eaxs.FolderType import Folder
 
 
 class Account(object):

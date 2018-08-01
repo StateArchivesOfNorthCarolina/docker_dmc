@@ -13,10 +13,10 @@ import gc
 import json
 from email.message import Message
 
-from lib.eaxs.MessageType import DmMessage
-from lib.xml_help.CommonMethods import CommonMethods
-from lib.eaxs.Account import Account
-from lib.eaxs.FolderType import Folder
+from tomes_darcmail.lib.eaxs.MessageType import DmMessage
+from tomes_darcmail.lib.xml_help.CommonMethods import CommonMethods
+from tomes_darcmail.lib.eaxs.Account import Account
+from tomes_darcmail.lib.eaxs.FolderType import Folder
 
 
 class MboxWalker:

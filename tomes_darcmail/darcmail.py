@@ -16,14 +16,16 @@ __AUTHOR__ = "Jeremy M. Gibson"
 __AUTHOR_EMAIL__ = "Jeremy.Gibson@ncdcr.gov"
 
 # import modules.
+import sys; sys.path.append("..")
 import logging
 import logging.config
 import os
+import plac
 import sys
 import yaml
-from lib.BuildEmlDarcmail import BuildEmlDarcmail
-from lib.dir_walker.MboxWalker import MboxWalker
-from lib.xml_help.CommonMethods import CommonMethods
+from tomes_darcmail.lib.BuildEmlDarcmail import BuildEmlDarcmail
+from tomes_darcmail.lib.dir_walker.MboxWalker import MboxWalker
+from tomes_darcmail.lib.xml_help.CommonMethods import CommonMethods
 
 
 class DarcMail(object):
@@ -315,7 +317,7 @@ def main(account_name: ("account identifier"),
         data_directory: ("attachment folder", "option")="attachments"):
 
     "Converts EML|MBOX to EAXS.\
-    \nexample: `python3 darcmail.py sample_mbox ../tests/sample_files/mbox -o OUTPUT`"
+    \nexample: `python3 darcmail.py sample_mbox ../tests/sample_files/mbox OUTPUT`"
 
     # make sure logging directory exists.
     logdir = "log"
@@ -350,5 +352,4 @@ def main(account_name: ("account identifier"),
 
 
 if __name__ == "__main__":
-    import plac
     plac.call(main)

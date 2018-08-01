@@ -9,10 +9,10 @@ from email.message import Message
 
 from lxml.ElementInclude import etree
 
-from lib.xml_help.CommonMethods import CommonMethods
-from lib.eaxs.SingleBodyType import SingleBody
-from lib.eaxs.HeaderType import Header
-from lib.eaxs.ParameterType import Parameter
+from tomes_darcmail.lib.xml_help.CommonMethods import CommonMethods
+from tomes_darcmail.lib.eaxs.SingleBodyType import SingleBody
+from tomes_darcmail.lib.eaxs.HeaderType import Header
+from tomes_darcmail.lib.eaxs.ParameterType import Parameter
 
 
 

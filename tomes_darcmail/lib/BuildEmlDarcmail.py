@@ -1,5 +1,5 @@
 import logging
-from lib.dir_walker.EmlWalker import EmlWalker
+from tomes_darcmail.lib.dir_walker.EmlWalker import EmlWalker
 
 
 class BuildEmlDarcmail(object):

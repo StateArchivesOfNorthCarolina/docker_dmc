@@ -7,8 +7,8 @@
 from email.message import Message
 import logging
 
-from lib.eaxs.MultiBodyType import MultiBody
-from lib.eaxs.SingleBodyType import SingleBody
+from tomes_darcmail.lib.eaxs.MultiBodyType import MultiBody
+from tomes_darcmail.lib.eaxs.SingleBodyType import SingleBody
 from . PayloadProcessor import PayloadProcessor as payprocess
 
 

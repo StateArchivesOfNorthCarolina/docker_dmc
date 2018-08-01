@@ -9,7 +9,7 @@ from lxml.etree import CDATA
 import ftfy
 import ftfy.bad_codecs
 
-from lib.eaxs.HashType import Hash
+from tomes_darcmail.lib.eaxs.HashType import Hash
 
 
 global __LOCALID__

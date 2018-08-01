@@ -9,8 +9,8 @@ from collections import OrderedDict
 
 from lxml.ElementInclude import etree
 
-from lib.eaxs.MessageType import DmMessage
-from lib.xml_help.CommonMethods import CommonMethods
+from tomes_darcmail.lib.eaxs.MessageType import DmMessage
+from tomes_darcmail.lib.xml_help.CommonMethods import CommonMethods
 
 
 class Folder:

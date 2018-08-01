@@ -7,7 +7,7 @@
 ##############################################################
 from email.message import Message
 
-from lib.eaxs.SingleBodyType import SingleBody as SB
+from tomes_darcmail.lib.eaxs.SingleBodyType import SingleBody as SB
 
 
 class PayloadProcessor:

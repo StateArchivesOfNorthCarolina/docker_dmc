@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 # import modules.
+import sys; sys.path.append("..")
 import hashlib
 import logging
 import os
@@ -11,6 +12,7 @@ import subprocess
 import time
 import unittest
 from lxml import etree
+from tomes_darcmail.darcmail import DarcMail
 
 # enable logging.
 logging.basicConfig(level=logging.DEBUG)
@@ -25,74 +27,52 @@ def MAKE_DIRNAME():
     _dirname = "{}{}".format(time.time(), random.random())
     sha256 = hashlib.sha256()
     sha256.update(_dirname.encode())
-    dirname = sha256.hexdigest()[:10]
+    dirname = "_" + sha256.hexdigest()[:10]
     return dirname
 
 
-# function to run DarcMailCLI.
-def RUN_DARCMAIL(dirname, source, eml=False):
-    
-    # add "./" before the command if not Windows.
-    slash = ""
-    if os.name != "nt":
-        slash = "./"
-
-    # construct the command; run it.
-    cmd = "{}DarcMailCLI.py -a {} -d {} -c 100 -st".format(slash, dirname, source)
-    if eml:
-        cmd += " -fe"
-    try:
-        logging.info("Running: {}".format(cmd))
-        a = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, 
-                check=True, cwd="../", shell=True)
-        return True
-    except subprocess.CalledProcessError as err:
-        logging.error(err)
-        return False
-
-
-class Test_DarcMailCLI(unittest.TestCase):
+class Test_DarcMail(unittest.TestCase):
 
 
     def setUp(self):
 
         # set attributes.
-        self.sample_mbox = "tests/sample_files/mbox"
-        self.sample_eml = "tests/sample_files/eml"
+        self.sample_mbox = "sample_files/mbox"
+        self.sample_eml = "sample_files/eml"
         self.make_dirname = MAKE_DIRNAME
-        self.run_darcmail = RUN_DARCMAIL
         self.xsd = XSD
         self.validator = etree.XMLSchema(etree.fromstring(self.xsd))
-        self.normalize_path = lambda *p: os.path.normpath(os.path.join(*p)).replace("\\", "/")
 
 
     def test__mbox(self):
         """ Is the EAXS from the sample MBOX valid? """
         
-        # create temporary dirname.
+        # create account ID and temporary dirname.
+        account_id = "sample"
         dirname = self.make_dirname()
-        eaxs_path = self.normalize_path("../OUTPUT", "eaxs", dirname)
-        eaxs = self.normalize_path(eaxs_path, "eaxs_xml", "{}.xml".format(dirname))
         
-        # make the EAXS and validate it.
-        result = self.run_darcmail(dirname, self.sample_mbox)
-        if not result:
-            test = False
-        else:
-            eaxs = etree.parse(eaxs)
-            test = self.validator.validate(eaxs)
+        # make the EAXS.
+        darcmail = DarcMail(account_id, self.sample_mbox, dirname)
+        darcmail.create_eaxs()
+        eaxs = os.path.join(dirname, "eaxs", account_id, "eaxs_xml", "{}.xml".format(
+            account_id))
+        logging.info("Created EAXS file: {}".format(eaxs))
+        
+        # validate EAXS.
+        eaxs_el = etree.parse(eaxs)
+        is_valid = self.validator.validate(eaxs_el)
 
         # delete temp output.
         try:
-            shutil.rmtree(eaxs_path)
+            pass#???shutil.rmtree(dirname)
         except Exception as err:
-            logging.warning("Can't delete folder: {}".format(eaxs_path))
+            logging.warning("Can't delete temporary folder: {}".format(dirname))
             logging.error(err)
 
-        self.assertTrue(test)
+        self.assertTrue(is_valid)
         
 
-    def test__eml(self):
+    def QUest__eml(self):
         """ Is the EAXS from the sample EML valid? """
 
         # create temporary dirname.
@@ -116,3 +96,7 @@ class Test_DarcMailCLI(unittest.TestCase):
             logging.error(err)
 
         self.assertTrue(test)
+
+
+if __name__ == "__main__":
+    pass #???

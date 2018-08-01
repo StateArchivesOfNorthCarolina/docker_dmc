@@ -8,7 +8,7 @@ from collections import OrderedDict
 
 from lxml.ElementInclude import etree
 
-from lib.xml_help.CommonMethods import CommonMethods
+from tomes_darcmail.lib.xml_help.CommonMethods import CommonMethods
 
 
 class Header:

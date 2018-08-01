@@ -15,12 +15,12 @@ import lxml.etree as etree
 from collections import OrderedDict
 
 
-from lib.eaxs.HeaderType import Header
-from lib.eaxs.ChildMessageType import ChildMessage
-from lib.eaxs.ParameterType import Parameter
-from lib.eaxs.IntBodyContentType import IntBodyContent
-from lib.eaxs.ExtBodyContentType import ExtBodyContent
-from lib.xml_help.CommonMethods import CommonMethods
+from tomes_darcmail.lib.eaxs.HeaderType import Header
+from tomes_darcmail.lib.eaxs.ChildMessageType import ChildMessage
+from tomes_darcmail.lib.eaxs.ParameterType import Parameter
+from tomes_darcmail.lib.eaxs.IntBodyContentType import IntBodyContent
+from tomes_darcmail.lib.eaxs.ExtBodyContentType import ExtBodyContent
+from tomes_darcmail.lib.xml_help.CommonMethods import CommonMethods
 
 
 class SingleBody:
