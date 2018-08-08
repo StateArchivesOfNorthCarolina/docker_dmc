@@ -61,8 +61,7 @@ class EmlWalker:
             for f in files:
                 if root not in self.message_pack:
                     self.message_pack[root] = []
-                if f.endswith(""):
-                #if f.endswith("eml"):
+                if f.endswith("eml"):
                     self.message_pack[root].append(f)
 			#TODO Nitin: "if len(self.message_pack[root]) == 0: raise RuntimeError???
         self.process_folders()
