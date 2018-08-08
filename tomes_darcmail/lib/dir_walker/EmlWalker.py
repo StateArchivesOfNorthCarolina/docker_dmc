@@ -98,7 +98,8 @@ class EmlWalker:
             self.chunks += 1
         except MemoryError as me:
             # TODO: Write to a file or error log with file_id or message id
-            raise MemoryError
+            self.logger.error(me)
+            raise MemoryError(me)
         mes = None
 
     def _transform_buffer(self, buff, path):
