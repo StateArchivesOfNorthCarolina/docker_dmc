@@ -3,12 +3,12 @@ import re
 
 class ValidateStructure(object):
     """
-     This class is to validate the structure of the mbox hierarchy. Takes a DarcMailCLI object
+     This class is to validate the structure of the mbox hierarchy. Takes a DarcMail object
     """
 
     def __init__(self, darcmail):
         """Constructor for ValidateStructure
-        @type darcmail : DarcMailCLI
+        @type darcmail : DarcMail
         """
         self.darcmail = darcmail
         self.logger = darcmail.logger
