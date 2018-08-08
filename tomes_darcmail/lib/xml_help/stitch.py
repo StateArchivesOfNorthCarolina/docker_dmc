@@ -1,3 +1,4 @@
+import logging
 import os
 from collections import OrderedDict
 
@@ -7,6 +8,7 @@ class Stitcher:
         self.xml_loc = xml_path
         self.global_id = gid
         self.files = OrderedDict()
+		self.logger = logging.getLogger(__name__)
 
     def stitch_account(self):
         fh = open(os.path.join(self.xml_loc, '{}.xml'.format(self.global_id)), 'w+', encoding='utf-8')
@@ -15,7 +17,7 @@ class Stitcher:
         res = os.listdir(self.xml_loc)
         self.files = [f for f in res if f.endswith(".xml")]
         for fn in self.files:
-            print('Stitching {}'.format(fn))
+            self.logger.info('Stitching {}'.format(fn))
             acc_part = open(os.path.join(self.xml_loc, fn), 'r', encoding='utf-8')
             x = 0
             for line in acc_part.readlines():

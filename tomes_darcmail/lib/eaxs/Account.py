@@ -84,7 +84,7 @@ class Account(object):
         self._write_file()
 
     def stitch_account(self):
-        print("Stitching the {} account.".format(self.global_id))
+        self.logger.info("Stitching the {} account.".format(self.global_id))
         fh = open(os.path.join(self.xml_loc, '{}.xml'.format(self.global_id)), 'w+', encoding='utf-8')
         fh.write(self.get_root_element_attributes())
         fh.write(self.get_id())

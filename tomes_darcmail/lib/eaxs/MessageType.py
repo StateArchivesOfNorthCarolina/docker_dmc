@@ -80,7 +80,7 @@ class DmMessage:
             self.logger.error("Inspect Message: KeyError {}".format(self.message.get("Message-ID")))
             self.incomplete.append(IncompleteParse('KeyError parsing EOL', e))
         except UnicodeEncodeError as ue:
-            print(sys.gettrace())
+            self.logger.error(ue, exc_info=True)
             self.logger.error("Inspect Message: UnicodeEncodeError {}".format(self.message.get("Message-ID")))
             self.incomplete.append(IncompleteParse('UnicodeEncodeError parsing EOL', ue))
         except LookupError as le:

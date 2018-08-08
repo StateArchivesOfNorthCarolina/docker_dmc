@@ -261,7 +261,7 @@ class CommonMethods:
             test = ftfy.fix_encoding(text.decode('utf-8', 'replace'))
             return test.encode('utf-8', 'strict')
         except Exception as e:
-            print(e)
+            logger.error(e)
             return ''
 
     @staticmethod
@@ -275,7 +275,7 @@ class CommonMethods:
         try:
             return ftfy.fix_encoding(text)
         except Exception as e:
-            print(e)
+            logger.error(e)
             return ''
 
     @staticmethod

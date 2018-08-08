@@ -5,6 +5,7 @@
 # Description: Class to parse the Content-Types of Messages
 ##############################################################
 
+import logging
 import re
 from email.message import Message
 
@@ -23,6 +24,8 @@ class ContentTypeHandler:
         self.charset = None
         self.content_type = None
         self.content_encoding = None
+		self.logger = logging.getLogger(__name__)
+
 
     def _process_ct(self):
         for header in self.ct_str:
@@ -67,4 +70,4 @@ class ContentTypeHandler:
 
     def process_attachment(self, ct_str):
         for header, value in self.header.items():
-            print()
+            self.logger.debug("Attachment header/value: {}".format(header, value))

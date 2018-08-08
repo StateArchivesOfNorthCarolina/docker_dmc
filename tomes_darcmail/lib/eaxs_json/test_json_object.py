@@ -16,4 +16,3 @@ def render_json():
 if __name__ == "__main__":
     jsn = render_json()
     my_json = json.dumps(jsn)
-    print()

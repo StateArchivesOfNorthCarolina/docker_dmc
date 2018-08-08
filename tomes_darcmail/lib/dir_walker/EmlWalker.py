@@ -58,7 +58,7 @@ class EmlWalker:
                 for line in fh.readlines():
                     s = line.strip().split("\t")
                     self.folder_map[s[0]] = s[1]
-        print("Scanning data structure for emails.")
+        self.logger.info("Scanning data structure for emails.")
         for root, dirs, files in os.walk(self.account_directory):
             for f in files:
                 if root not in self.message_pack:
