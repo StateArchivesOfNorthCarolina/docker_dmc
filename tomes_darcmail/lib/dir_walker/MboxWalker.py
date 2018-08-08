@@ -31,7 +31,7 @@ class MboxWalker:
         self.current_relpath = None  # type: str
         self.xml_dir = xml_dir
         self.account = Account(account_name, xml_dir)
-        self.logger = logging.getLogger("MboxWalker")
+        self.logger = logging.getLogger(__name__)
         self.total_messages_processed = 0  # type: int
         self.chunks = CommonMethods.get_chunksize()  # type: int
         self.tracking_pos = 0  # type: int

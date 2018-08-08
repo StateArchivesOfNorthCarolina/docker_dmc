@@ -63,7 +63,7 @@ class SingleBody:
         self.child_message = []  # type: list[ChildMessage]
         self.phantom_body = None  # type: str
         self.append_body = True
-        self.logger = logging.getLogger("SingleBodyType")
+        self.logger = logging.getLogger(__name__)
         self.body_only = False
         self.soupify = False
         self.body_content_duplicate = False

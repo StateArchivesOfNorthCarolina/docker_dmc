@@ -33,7 +33,7 @@ class ExtBodyContent:
         self.hash = None  # type: Hash
         self.body_content = None  # type: str
         self.gid = uuid.uuid4()  # type: uuid
-        self.logger = logging.getLogger("ExtBodyContent")
+        self.logger = logging.getLogger(__name__)
 
     def set_hash(self, hdigest, ht='SHA256'):
         self.hash = Hash(hdigest, ht)

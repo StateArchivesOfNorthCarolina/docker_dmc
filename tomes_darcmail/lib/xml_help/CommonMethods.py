@@ -48,7 +48,7 @@ DRAFT = "Draft"
 RECENT = "Recent"
 
 __LOCALID__= 0  # type: int
-logger = logging.getLogger("CommonMethods")
+logger = logging.getLogger(__name__)
 
 printable = frozenset({'Lu', 'Ll', 'Lt', 'Lm', 'Lo', 'Mn', 'Mc', 'Me',
                        'Nd', 'Nl', 'No', 'Pc', 'Pd', 'Ps', 'Pe', 'Pi',

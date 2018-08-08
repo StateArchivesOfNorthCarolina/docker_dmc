@@ -32,7 +32,7 @@ class DmMessage:
 
     def __init__(self, rel_path, local_id, message, fn=None):
         """Constructor for Message"""
-        self.logger = logging.getLogger("MessageType")
+        self.logger = logging.getLogger(__name__)
         self.message = message  # type: Message
         self.fn = fn
         # First parts of the schema message-type

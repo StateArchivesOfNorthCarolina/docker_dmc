@@ -36,7 +36,7 @@ class EmlWalker:
         self.messages = []
         self.current_relpath = None  # type: str
         self.total_messages_processed = 0
-        self.logger = logging.getLogger("EmlWalker")
+        self.logger = logging.getLogger(__name__)
         self.message_pack = DefaultListOrderedDict()
         self.account.start_account()
         self.account.write_global_id()

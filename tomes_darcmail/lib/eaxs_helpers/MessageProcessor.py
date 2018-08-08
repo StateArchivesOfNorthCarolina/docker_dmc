@@ -24,7 +24,7 @@ class MessageProcessor:
         self.payloads = message.get_payload()  # type: list[]
         self.single_bodies = []  # type: list[SingleBody]
         self.relpath = relpath
-        self.logger = logging.getLogger("MessageProcessor")
+        self.logger = logging.getLogger(__name__)
 
     def process_payloads(self):
         pp = payprocess(self.payloads)
