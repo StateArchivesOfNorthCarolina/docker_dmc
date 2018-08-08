@@ -2,14 +2,11 @@
 
 # import modules.
 import sys; sys.path.append("..")
-import hashlib
 import logging
 import os
-import random
+import plac
 import requests
-import shutil
-import subprocess
-import time
+import tempfile
 import unittest
 from lxml import etree
 from tomes_darcmail.darcmail import DarcMail
@@ -18,17 +15,39 @@ from tomes_darcmail.darcmail import DarcMail
 logging.basicConfig(level=logging.DEBUG)
 
 
-# load EAXS XSD.
-XSD = requests.get("https://raw.githubusercontent.com/StateArchivesOfNorthCarolina/tomes-eaxs/master/versions/1/eaxs_schema_v1.xsd").text.encode()
+# set path and XSD data.
+HERE = os.path.dirname(__file__)
+XSD_PATH = "https://raw.githubusercontent.com/StateArchivesOfNorthCarolina/tomes-eaxs/master/versions/1/eaxs_schema_v1.xsd"
+XSD = requests.get(XSD_PATH).text.encode()
+XSD_EL = etree.fromstring(XSD)
+VALIDATOR = etree.XMLSchema(XSD_EL)
 
 
-# generate random folder name based on SHA-256 hash of time plus a random number.
-def MAKE_DIRNAME():
-    _dirname = "{}{}".format(time.time(), random.random())
-    sha256 = hashlib.sha256()
-    sha256.update(_dirname.encode())
-    dirname = "_" + sha256.hexdigest()[:10]
-    return dirname
+def VALIDATE_EAXS(account_id, sample_data, is_eml=False):
+    """ Creates a temporary EAXS with name @account_id using @sample_data.
+    
+    Returns:
+        bool: The return value.
+        True if the EAXS is valid per @XSD_PATH. Otherwise, False. """
+
+    # create temporary folder.
+    temp_dir = tempfile.TemporaryDirectory(dir=HERE)
+    
+    # make the EAXS.
+    logging.info("Creating EAXS at: {}".format(temp_dir.name))       
+    darcmail = DarcMail(account_id, sample_data, temp_dir.name, from_eml=is_eml)
+    darcmail.create_eaxs()
+    eaxs = os.path.join(temp_dir.name, "eaxs", account_id, "eaxs_xml", "{}.xml".format(
+        account_id))
+    
+    # validate EAXS.
+    logging.info("Validating EAXS at: {}".format(eaxs))
+    eaxs_el = etree.parse(eaxs)
+    is_valid = VALIDATOR.validate(eaxs_el)
+
+    #temp_dir.cleanup()
+    logging.info("XML validation yielded: {}".format(is_valid))
+    return is_valid
 
 
 class Test_DarcMail(unittest.TestCase):
@@ -37,66 +56,42 @@ class Test_DarcMail(unittest.TestCase):
     def setUp(self):
 
         # set attributes.
-        self.sample_mbox = "sample_files/mbox"
-        self.sample_eml = "sample_files/eml"
-        self.make_dirname = MAKE_DIRNAME
+        self.here = HERE 
+        self.sample_mbox = os.path.join(self.here, "sample_files", "mbox")
+        self.sample_eml = os.path.join(self.here, "sample_files", "eml")
+        self.xsd_path = XSD_PATH
         self.xsd = XSD
-        self.validator = etree.XMLSchema(etree.fromstring(self.xsd))
+        self.xsd_el = XSD_EL
+        self.validator = VALIDATOR
+        self._validate_EAXS = VALIDATE_EAXS
 
 
     def test__mbox(self):
-        """ Is the EAXS from the sample MBOX valid? """
+        """ Does the sample MBOX yield a valid EAXS? """
         
-        # create account ID and temporary dirname.
-        account_id = "sample"
-        dirname = self.make_dirname()
-        
-        # make the EAXS.
-        darcmail = DarcMail(account_id, self.sample_mbox, dirname)
-        darcmail.create_eaxs()
-        eaxs = os.path.join(dirname, "eaxs", account_id, "eaxs_xml", "{}.xml".format(
-            account_id))
-        logging.info("Created EAXS file: {}".format(eaxs))
-        
-        # validate EAXS.
-        eaxs_el = etree.parse(eaxs)
-        is_valid = self.validator.validate(eaxs_el)
-
-        # delete temp output.
-        try:
-            pass#???shutil.rmtree(dirname)
-        except Exception as err:
-            logging.warning("Can't delete temporary folder: {}".format(dirname))
-            logging.error(err)
-
+        is_valid = self._validate_EAXS("sample_mbox", self.sample_mbox) 
         self.assertTrue(is_valid)
-        
+  
 
-    def QUest__eml(self):
-        """ Is the EAXS from the sample EML valid? """
+    def test__eml(self):
+        """ Does the sample EML yield a valid EAXS? """
 
-        # create temporary dirname.
-        dirname = self.make_dirname()
-        eaxs_path = self.normalize_path("../OUTPUT", "eaxs", dirname)
-        eaxs = self.normalize_path(eaxs_path, "eaxs_xml", "{}.xml".format(dirname))
-        
-        # make the EAXS and validate it.
-        result = self.run_darcmail(dirname, self.sample_eml, True)
-        if not result:
-            test = False
-        else:
-            eaxs = etree.parse(eaxs)
-            test = self.validator.validate(eaxs)
+        is_valid = self._validate_EAXS("sample_eml", self.sample_eml, is_eml=True) 
+        self.assertTrue(is_valid)
 
-        # delete temp output.
-        try:
-            shutil.rmtree(eaxs_path)
-        except Exception as err:
-            logging.warning("Can't delete folder: {}".format(eaxs_path))
-            logging.error(err)
 
-        self.assertTrue(test)
+# CLI.
+def main(account_path: "email account path", 
+        from_eml: ("toggle EML processing", "flag", "fe")):
+    
+    "Creates and validates an EAXS account.\
+    \nWARNING: Only use this with *small* MBOX|EML data (< 100 messages).\
+    \nexample: `python3 test__darcmail sample_files/mbox`"
+
+    # creates EAXS.
+    is_valid = VALIDATE_EAXS("sample", account_path, is_eml=from_eml)
+    print(is_valid)
 
 
 if __name__ == "__main__":
-    pass #???
+    plac.call(main)
