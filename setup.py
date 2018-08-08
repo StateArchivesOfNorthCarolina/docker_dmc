@@ -1,5 +1,5 @@
 from setuptools import setup, setuptools
-from tomes_darcmail.DarcMailCLI import __NAME__, __DESCRIPTION__, __URL__, __VERSION__, __AUTHOR__, __AUTHOR_EMAIL__
+from tomes_darcmail.darcmail import __NAME__, __DESCRIPTION__, __URL__, __VERSION__, __AUTHOR__, __AUTHOR_EMAIL__
 
 def doc():
     with open("docs/documentation.md") as d:
