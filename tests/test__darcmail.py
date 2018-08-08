@@ -45,7 +45,7 @@ def VALIDATE_EAXS(account_id, sample_data, is_eml=False):
     eaxs_el = etree.parse(eaxs)
     is_valid = VALIDATOR.validate(eaxs_el)
 
-    #temp_dir.cleanup()
+    temp_dir.cleanup()
     logging.info("XML validation yielded: {}".format(is_valid))
     return is_valid
 
