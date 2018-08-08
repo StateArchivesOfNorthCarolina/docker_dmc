@@ -52,7 +52,6 @@ class EmlWalker:
         if self.from_tomes:
             self.account_directory = os.path.join(self.data_dir, self.account_name)
             with open(os.path.join(self.account_directory, "folder_map.tsv")) as fh:
-				#TODO Nitin: "if len(fh.readlines()) == 0: raise RuntimeError???
                 for line in fh.readlines():
                     s = line.strip().split("\t")
                     self.folder_map[s[0]] = s[1]
@@ -63,7 +62,6 @@ class EmlWalker:
                     self.message_pack[root] = []
                 if f.endswith("eml"):
                     self.message_pack[root].append(f)
-			#TODO Nitin: "if len(self.message_pack[root]) == 0: raise RuntimeError???
         self.process_folders()
 
     def process_folders(self):
