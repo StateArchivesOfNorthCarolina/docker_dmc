@@ -5,14 +5,11 @@
 # Description: implementation of the multibody type
 ##############################################################
 from collections import OrderedDict
-from email.message import Message
 
 from lxml.ElementInclude import etree
 
 from tomes_darcmail.lib.xml_help.CommonMethods import CommonMethods
 from tomes_darcmail.lib.eaxs.SingleBodyType import SingleBody
-from tomes_darcmail.lib.eaxs.HeaderType import Header
-from tomes_darcmail.lib.eaxs.ParameterType import Parameter
 
 
 

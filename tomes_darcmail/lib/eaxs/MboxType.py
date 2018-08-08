@@ -4,7 +4,6 @@
 #
 # Description: Implementation of the mbox-type
 ##############################################################
-from tomes_darcmail.lib.eaxs.HashType import Hash
 
 
 class Mbox:

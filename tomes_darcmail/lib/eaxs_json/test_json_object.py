@@ -1,6 +1,4 @@
 import json
-import python_jsonschema_objects as pjs
-from string import Template
 
 
 def render_json():

@@ -5,7 +5,6 @@
 # Description: Takes a message's payloads and builds into
 #              singlebodies and multibodies
 ##############################################################
-from email.message import Message
 
 from tomes_darcmail.lib.eaxs.SingleBodyType import SingleBody as SB
 

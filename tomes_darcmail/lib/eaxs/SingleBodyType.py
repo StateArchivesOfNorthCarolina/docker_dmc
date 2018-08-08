@@ -16,7 +16,6 @@ from collections import OrderedDict
 
 
 from tomes_darcmail.lib.eaxs.HeaderType import Header
-from tomes_darcmail.lib.eaxs.ChildMessageType import ChildMessage
 from tomes_darcmail.lib.eaxs.ParameterType import Parameter
 from tomes_darcmail.lib.eaxs.IntBodyContentType import IntBodyContent
 from tomes_darcmail.lib.eaxs.ExtBodyContentType import ExtBodyContent

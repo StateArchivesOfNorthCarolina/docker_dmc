@@ -266,7 +266,7 @@ class DarcMail(object):
             self.logger.info("Converting EML to EAXS.")
             CommonMethods.set_package_type(CommonMethods.PACK_TYPE_EML)
             self._create_data_dirs()
-            beml = BuildEmlDarcmail(self)
+            BuildEmlDarcmail(self)
             return
 
         # otherwise, parse the account as MBOX.

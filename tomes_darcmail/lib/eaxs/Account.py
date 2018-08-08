@@ -9,10 +9,8 @@ import codecs
 import os
 import logging
 
-from lxml.ElementInclude import etree
 
 from tomes_darcmail.lib.xml_help.CommonMethods import CommonMethods
-from tomes_darcmail.lib.eaxs.FolderType import Folder
 
 
 class Account(object):

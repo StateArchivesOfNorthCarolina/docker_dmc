@@ -9,7 +9,6 @@ from collections import OrderedDict
 
 from lxml.ElementInclude import etree
 
-from tomes_darcmail.lib.eaxs.MessageType import DmMessage
 from tomes_darcmail.lib.xml_help.CommonMethods import CommonMethods
 
 

@@ -4,9 +4,7 @@
 #
 # Description: Implements the EAXS message-type
 ##############################################################
-import sys
 from collections import OrderedDict
-from email.message import Message
 import email
 import logging
 
@@ -16,7 +14,6 @@ from tomes_darcmail.lib.eaxs.HashType import Hash
 from tomes_darcmail.lib.eaxs.HeaderType import Header
 from tomes_darcmail.lib.eaxs.IncompleteParseType import IncompleteParse
 from tomes_darcmail.lib.eaxs.MultiBodyType import MultiBody
-from tomes_darcmail.lib.eaxs.SingleBodyType import SingleBody
 from tomes_darcmail.lib.xml_help.CommonMethods import CommonMethods
 from tomes_darcmail.lib.eaxs_helpers.MessageProcessor import MessageProcessor as MPros
 

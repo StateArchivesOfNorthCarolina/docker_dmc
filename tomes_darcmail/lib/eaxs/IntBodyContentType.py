@@ -5,7 +5,6 @@
 # Description: Implementation of the int-body-content-type
 ##############################################################
 from lxml.ElementInclude import etree
-from lxml.etree import CDATA
 from collections import OrderedDict
 
 from tomes_darcmail.lib.xml_help import CommonMethods

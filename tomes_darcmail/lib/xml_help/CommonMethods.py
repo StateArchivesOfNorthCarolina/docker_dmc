@@ -229,7 +229,6 @@ class CommonMethods:
         try:
             if re.search("[<>\'\"]", text) is not None:
                 return CDATA(text)
-                pass
             return text
         except ValueError as ve:
             raise

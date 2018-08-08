@@ -5,13 +5,11 @@
 # Description:
 ##############################################################
 import os
-import mailbox
 import logging
 import re
 import email
 import gc
 import json
-from email.message import Message
 
 from tomes_darcmail.lib.eaxs.MessageType import DmMessage
 from tomes_darcmail.lib.xml_help.CommonMethods import CommonMethods

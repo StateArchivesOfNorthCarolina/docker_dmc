@@ -10,9 +10,7 @@ import os
 import logging
 import email
 import gc
-import json
 from collections import OrderedDict
-from email.message import Message
 
 from tomes_darcmail.lib.eaxs.MessageType import DmMessage
 from tomes_darcmail.lib.xml_help.CommonMethods import CommonMethods
