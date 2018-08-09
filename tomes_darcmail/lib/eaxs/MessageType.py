@@ -7,6 +7,7 @@
 from collections import OrderedDict
 import email
 import logging
+import os
 
 from lxml.ElementInclude import etree
 
@@ -33,7 +34,14 @@ class DmMessage:
         self.message = message  # type: Message
         self.fn = fn
         # First parts of the schema message-type
-        self.relative_path = rel_path
+        #self.relative_path = rel_path
+
+        # TODO: This isn't a good way to remove the leading "." on @rel_path.
+        # TODO: It should not be passed in the first place with the leading ".".
+        if rel_path[0] == ".": 
+            rel_path = rel_path[1:]
+        self.relative_path = os.path.normpath(os.path.join(os.sep, rel_path)).replace(os.sep,
+                "/")
         self.local_id = local_id
         self.message_id = CommonMethods.cdata_wrap(self.message.get("Message-ID"))  # type: str
         if self.message_id == '' or self.message_id is None:

@@ -73,7 +73,9 @@ class ExtBodyContent:
 
         ext_bdy_head = etree.SubElement(parent, "ExtBodyContent")
         child1 = etree.SubElement(ext_bdy_head, "RelPath")
-        child1.text = self.rel_path
+        #child1.text = self.rel_path
+        child1.text = os.path.normpath(os.path.join(os.sep, self.rel_path)).replace(os.sep, 
+                "/")
         child2 = etree.SubElement(ext_bdy_head, "CharSet")
         child2.text = self.char_set
         child3 = etree.SubElement(ext_bdy_head, "TransferEncoding")
