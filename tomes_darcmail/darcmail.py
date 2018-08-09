@@ -81,16 +81,10 @@ class DarcMail(object):
         self.event_logger = logging.getLogger("event_logger")
         self.event_logger.addHandler(logging.NullHandler())
 
-        # convenience functions to clean up path notation.
-        self._normalize_sep = lambda p: p.replace(os.sep, os.altsep) if (
-                os.altsep == "/") else p
-        self._normalize_path = lambda p: self._normalize_sep(p)  
-        self._join_paths = lambda *p: self._normalize_path(os.path.join(*p))
-
         # set argument attributes.
         self.account_name = account_name
-        self.account_directory = self._normalize_path(account_directory)
-        self.output_directory = self._normalize_path(output_directory)
+        self.account_directory = account_directory
+        self.output_directory = output_directory
         self.eml_struct = from_eml
         self.chunksize = chunksize
         self.stitch = stitch
@@ -166,15 +160,13 @@ class DarcMail(object):
         CommonMethods.set_dedupe()
         
         # set data paths.
-        self.eaxs = self._join_paths(CommonMethods.get_base_path(), "eaxs")
-        self.mboxes = self._join_paths(CommonMethods.get_base_path(), "mboxes")
-        self.emls = self._join_paths(CommonMethods.get_base_path(), "emls")
-        self.psts = self._join_paths(CommonMethods.get_base_path(), "pst")
-        self.base_path = self._join_paths(self.eaxs, self.account_name)
-        self.data_dir = self._normalize_path(os.path.abspath(self._join_paths(self.base_path,
-            self.data_dir)))
-        self.xml_dir = self._normalize_path(os.path.abspath(self._join_paths(self.base_path,
-            "eaxs_xml")))
+        self.eaxs = os.path.join(CommonMethods.get_base_path(), "eaxs")
+        self.mboxes = os.path.join(CommonMethods.get_base_path(), "mboxes")
+        self.emls = os.path.join(CommonMethods.get_base_path(), "emls")
+        self.psts = os.path.join(CommonMethods.get_base_path(), "pst")
+        self.base_path = os.path.join(self.eaxs, self.account_name)
+        self.data_dir = os.path.abspath(os.path.join(self.base_path, self.data_dir))
+        self.xml_dir = os.path.abspath(os.path.join(self.base_path, "eaxs_xml"))
 
         # verify @self.base_path doesn't exist.
         if os.path.isdir(self.base_path):
@@ -191,15 +183,14 @@ class DarcMail(object):
         CommonMethods.set_stitch(self.stitch)
 
         # set attachment data and EAXS XML folders.
-        CommonMethods.set_rel_attachment_dir(self._join_paths(os.path.sep, self._join_paths(
+        CommonMethods.set_rel_attachment_dir(os.path.join(os.path.sep, os.path.join(
             os.path.split(self.base_path)[-1], "attachments")))
         CommonMethods.set_attachment_dir(self.data_dir)
         CommonMethods.set_xml_dir(self.xml_dir)
         
         # toggle JSON output. # DISABLED.
         ##if self.save_json:
-        ##    self.json_dir = self._normalize_path(os.path.abspath(self._join_paths(
-        ##        self.base_path, "eaxs_json")))
+        ##    self.json_dir = os.path.abspath(os.path.join(self.base_path, "eaxs_json"))
         ##    if not self.eml_struct: 
         ##        CommonMethods.set_store_json()
         ##        CommonMethods.set_json_directory(self.json_dir)
