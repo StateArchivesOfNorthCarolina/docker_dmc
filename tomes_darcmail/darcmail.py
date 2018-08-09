@@ -81,10 +81,14 @@ class DarcMail(object):
         self.event_logger = logging.getLogger("event_logger")
         self.event_logger.addHandler(logging.NullHandler())
 
+        # function to force os.sep (i.e. replace "/" with "\" on Windows).
+        normalize_sep = lambda p: p.replace(os.altsep, os.sep) if (
+                os.altsep is not None) else p
+
         # set argument attributes.
         self.account_name = account_name
-        self.account_directory = account_directory
-        self.output_directory = output_directory
+        self.account_directory = normalize_sep(account_directory)
+        self.output_directory = normalize_sep(output_directory)
         self.eml_struct = from_eml
         self.chunksize = chunksize
         self.stitch = stitch
