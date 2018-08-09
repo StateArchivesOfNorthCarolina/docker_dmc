@@ -165,8 +165,10 @@ class DarcMail(object):
         self.emls = os.path.join(CommonMethods.get_base_path(), "emls")
         self.psts = os.path.join(CommonMethods.get_base_path(), "pst")
         self.base_path = os.path.join(self.eaxs, self.account_name)
-        self.data_dir = os.path.abspath(os.path.join(self.base_path, self.data_dir))
-        self.xml_dir = os.path.abspath(os.path.join(self.base_path, "eaxs_xml"))
+        self.data_dir = os.path.abspath(os.path.join(self.base_path,
+            self.data_dir))
+        self.xml_dir = os.path.abspath(os.path.join(self.base_path,
+            "eaxs_xml"))
 
         # verify @self.base_path doesn't exist.
         if os.path.isdir(self.base_path):
@@ -190,7 +192,8 @@ class DarcMail(object):
         
         # toggle JSON output. # DISABLED.
         ##if self.save_json:
-        ##    self.json_dir = os.path.abspath(os.path.join(self.base_path, "eaxs_json"))
+        ##    self.json_dir = os.path.abspath(os.path.join(
+        ##        self.base_path, "eaxs_json"))
         ##    if not self.eml_struct: 
         ##        CommonMethods.set_store_json()
         ##        CommonMethods.set_json_directory(self.json_dir)
@@ -337,7 +340,6 @@ def main(account_name: ("account identifier"),
         logging.info("Done.")
         sys.exit()
     except Exception as err:
-        raise err
         logging.critical(err)
         sys.exit(err.__repr__())
 
