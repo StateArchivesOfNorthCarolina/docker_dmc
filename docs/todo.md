@@ -8,5 +8,5 @@
 - Currently, "empty" EAXS files will be created if DarcMail processes an EML folder with no `.eml` files. For future versions, no EAXS file or folder structure should be created if no actual EML or MBOX data is found.
 - The use of globals in modules such as  `./tomes_darcmail/lib/xml_help/CommonMethods.py` should be avoided in future versions.
 - The `_devel` parameter should be removed as it only appears to set a Windows-style path for testing purposes. A test directory can just be passed as the output directory for any testing needs.
-- Investigate the rationale for the `_tomes_tool` parameter in terms of what behaviors it changes. There may be a better way to handle use of DarcMail within a Docker container without having conditional behavior based on this parameter. 
+- Investigate the rationale for the `_tomes_tool` parameter in terms of what behaviors it changes in terms of running within a Docker container. There may be a better way to handle this issue without having conditional behavior based on this parameter. 
 - Consider adding the option to output EAXS files per message using the same path structure as EML. This will allow for a more sustainable approach to updating the status of individual messages over time and falls more in line with the concept of "iterative processing".
