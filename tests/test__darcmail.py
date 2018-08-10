@@ -97,7 +97,7 @@ def main(account_path: "email account path",
     folders = eaxs_el.xpath("//*[local-name()='Folder']")
     messages = eaxs_el.xpath("//*[local-name()='Message']")
     
-    # report.
+    # report statistics.
     stats = "EAXS had {} total folders with {} total messages.".format(len(folders), 
             len(messages))
     print(stats)
