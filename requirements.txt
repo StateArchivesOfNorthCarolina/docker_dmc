@@ -1,5 +1,5 @@
 ftfy>=5.0.2
-lxml>=3.8.0
+lxml>=4.2.1
 plac>=0.9.6
 PyYAML>=3.12
 requests>=2.18

@@ -332,12 +332,14 @@ def main(account_name: ("account identifier"),
     if silent:
         config["handlers"]["console"]["level"] = 100
     logging.config.dictConfig(config)
-    
+
+    # find "Easter Eggs", i.e. if one or both of these strings are in @output_directory.
+    _devel = "TOMES_DEVEL" in output_directory
+    _tomes_tool = "TOMES_TOOL" in output_directory
+
     # make tagged version of EAXS.
     logging.info("Running CLI: " + " ".join(sys.argv))
     try:
-        _devel = "_DEVEL" in output_directory
-        _tomes_tool = "TOMES_TOOL" in output_directory
         darcmail = DarcMail(account_name, account_directory, output_directory, from_eml,
                 stitch, chunksize, data_directory, _devel, _tomes_tool)
         darcmail.create_eaxs()
