@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 # set global path and validator.
 HERE = os.path.dirname(__file__)
-VALIDATOR = []
+VALIDATOR = None
 
 
 def VALIDATE_EAXS(account_id, sample_data, is_eml=False):
@@ -30,11 +30,12 @@ def VALIDATE_EAXS(account_id, sample_data, is_eml=False):
     """
 
     # set XSD data and prevent repeat http requests.
-    if len(VALIDATOR) == 0:
+    global VALIDATOR    
+    if VALIDATOR is None:
         xsd_path = "https://raw.githubusercontent.com/StateArchivesOfNorthCarolina/tomes-eaxs/master/versions/1/eaxs_schema_v1.xsd"
         xsd = requests.get(xsd_path).text.encode()
         xsd_el = etree.fromstring(xsd)
-        VALIDATOR.append(etree.XMLSchema(xsd_el))
+        VALIDATOR = etree.XMLSchema(xsd_el)
         
     # create temporary folder.
     temp_dir = tempfile.TemporaryDirectory(dir=HERE)
@@ -49,7 +50,7 @@ def VALIDATE_EAXS(account_id, sample_data, is_eml=False):
     # validate EAXS.
     logging.info("Validating EAXS at: {}".format(eaxs))
     eaxs_el = etree.parse(eaxs)
-    is_valid = VALIDATOR[0].validate(eaxs_el)
+    is_valid = VALIDATOR.validate(eaxs_el)
 
     temp_dir.cleanup()
     logging.info("XML validation yielded: {}".format(is_valid))
@@ -98,7 +99,7 @@ def main(account_path: "email account path",
     messages = eaxs_el.xpath("//*[local-name()='Message']")
     
     # report statistics.
-    stats = "EAXS had {} total folders with {} total messages.".format(len(folders), 
+    stats = "EAXS has {} total folders with {} total messages.".format(len(folders), 
             len(messages))
     print(stats)
 
