@@ -312,8 +312,7 @@ def main(account_name: ("account identifier"),
         from_eml: ("toggle EML processing", "flag", "fe"),
         stitch: ("combine chuncked EAXS files", "flag", "st"),
         chunksize: ("messages per chuncked EAXS file (estimate)", "option", "c", int)=0,
-        data_directory: ("attachment folder", "option")="attachments",
-        *args):
+        data_directory: ("attachment folder", "option")="attachments"):
 
     "Converts EML|MBOX to EAXS.\
     \nexample: `python3 darcmail.py sample_mbox ../tests/sample_files/mbox OUTPUT`"
@@ -334,15 +333,11 @@ def main(account_name: ("account identifier"),
         config["handlers"]["console"]["level"] = 100
     logging.config.dictConfig(config)
 
-    # find "Easter Eggs", i.e. if one or both of these strings are in *args.
-    _devel = "-dev" in args
-    _tomes_tool = "-tt" in args
-
     # make tagged version of EAXS.
     logging.info("Running CLI: " + " ".join(sys.argv))
     try:
         darcmail = DarcMail(account_name, account_directory, output_directory, from_eml,
-                stitch, chunksize, data_directory, _devel, _tomes_tool)
+                stitch, chunksize, data_directory, _DEVEL, _TOMES_TOOL)
         darcmail.create_eaxs()
         logging.info("Done.")
         sys.exit()
@@ -352,4 +347,12 @@ def main(account_name: ("account identifier"),
 
 
 if __name__ == "__main__":
-    plac.call(main)
+    
+    # test for secret flags.
+    secrets = ["-dev", "-tt"]
+    _DEVEL = secrets[0] in sys.argv
+    _TOMES_TOOL = secrets[1] in sys.argv
+    
+    # remove secret flags; call plac.
+    args = [a for a in sys.argv[1:] if a not in secrets]
+    plac.call(main, args)
