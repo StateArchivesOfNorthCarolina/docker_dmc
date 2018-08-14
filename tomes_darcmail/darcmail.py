@@ -312,7 +312,8 @@ def main(account_name: ("account identifier"),
         from_eml: ("toggle EML processing", "flag", "fe"),
         stitch: ("combine chuncked EAXS files", "flag", "st"),
         chunksize: ("messages per chuncked EAXS file (estimate)", "option", "c", int)=0,
-        data_directory: ("attachment folder", "option")="attachments"):
+        data_directory: ("attachment folder", "option")="attachments",
+        *args):
 
     "Converts EML|MBOX to EAXS.\
     \nexample: `python3 darcmail.py sample_mbox ../tests/sample_files/mbox OUTPUT`"
@@ -333,9 +334,9 @@ def main(account_name: ("account identifier"),
         config["handlers"]["console"]["level"] = 100
     logging.config.dictConfig(config)
 
-    # find "Easter Eggs", i.e. if one or both of these strings are in @output_directory.
-    _devel = "TOMES_DEVEL" in output_directory
-    _tomes_tool = "TOMES_TOOL" in output_directory
+    # find "Easter Eggs", i.e. if one or both of these strings are in *args.
+    _devel = "-dev" in args
+    _tomes_tool = "-tt" in args
 
     # make tagged version of EAXS.
     logging.info("Running CLI: " + " ".join(sys.argv))
