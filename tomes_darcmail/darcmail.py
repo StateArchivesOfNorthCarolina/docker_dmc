@@ -17,6 +17,7 @@ __AUTHOR_EMAIL__ = "Jeremy.Gibson@ncdcr.gov"
 
 # import modules.
 import sys; sys.path.append("..")
+import glob
 import logging
 import logging.config
 import os
@@ -33,8 +34,9 @@ class DarcMail(object):
     Carl Schaefer (Smithsonian Institution Archives).
     
     Attributes:
-        xml_dir(str): The path containing the EAXS file/s.
-        data_dir (str): The path containing EAXS attachments.
+        - xml_dir (str): The path containing the EAXS file/s.
+        - xml_files (function): Returns a list of created EAXS files.
+        - data_dir (str): The path containing EAXS attachments.
 
     Example:
         >>> import os
@@ -42,7 +44,8 @@ class DarcMail(object):
         >>> darcmail = DarcMail("sample_mbox_account", sample_mbox, ".")
         >>> os.path.isdir(darcmail.xml_dir) # False
         >>> darcmail.create_eaxs()
-        >>> os.path.isdir(darcmail.xml_dir) # True       
+        >>> os.path.isdir(darcmail.xml_dir) # True
+        >>> False not in [os.path.isfile(xf) for xf in darcmail.xml_files] # True
     """
 
     def __init__(self,
@@ -101,6 +104,7 @@ class DarcMail(object):
         self.levels = 1
         self.max_internal = 0
         self.xml_dir = None
+        self.xml_files = lambda: glob.glob(str(self.xml_dir) + "/*.xml")
         self.json_dir = None
         self.data_dir = data_directory
         self.mbox_structure = None
