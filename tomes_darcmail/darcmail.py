@@ -35,7 +35,8 @@ class DarcMail(object):
     
     Attributes:
         - xml_dir (str): The path containing the EAXS file/s.
-        - xml_files (function): Returns a list of created EAXS files.
+        - xml_files (function): Returns a list of basenames for the EAXS (.xml) files in 
+        @self.xml_dir.
         - data_dir (str): The path containing EAXS attachments.
 
     Example:
@@ -104,7 +105,8 @@ class DarcMail(object):
         self.levels = 1
         self.max_internal = 0
         self.xml_dir = None
-        self.xml_files = lambda: glob.glob(str(self.xml_dir) + "/*.xml")
+        self.xml_files = lambda: [os.path.basename(f) for f in glob.glob(str(self.xml_dir) + 
+            "/*.xml")]
         self.json_dir = None
         self.data_dir = data_directory
         self.mbox_structure = None
