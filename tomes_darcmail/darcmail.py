@@ -17,7 +17,6 @@ __AUTHOR_EMAIL__ = "Jeremy.Gibson@ncdcr.gov"
 
 # import modules.
 import sys; sys.path.append("..")
-import glob
 import logging
 import logging.config
 import os
